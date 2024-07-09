@@ -1,35 +1,40 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// eslint-disable-next-line no-unused-vars
+import React from 'react';
+import { useUser } from '@clerk/clerk-react';
+import Navbar from './components/Navbar';
+import Hero from './components/Hero';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import SignInPage from './routes/SignInPage';
+import SignUpPage from './routes/SignUpPage';
+import Footer from './components/Footer';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const { isSignedIn, isLoaded } = useUser();
 
   return (
-    <>
+    <Router>
       <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        <Navbar />
+        <Routes>
+          <Route path="/login" element={<SignInPage />} />
+          <Route path="/sign-up" element={<SignUpPage />} />
+          <Route
+            path="/"
+            element={
+              isLoaded && !isSignedIn ? (
+                <Hero />
+              ) : isLoaded && isSignedIn ? (
+                <h1>Signed in</h1>
+              ) : (
+                <div>Loading...</div>
+              )
+            }
+          />
+        </Routes>
+          <Footer />
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </Router>
+  );
 }
 
-export default App
+export default App;
