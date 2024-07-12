@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 const Hero = () => {
   const {isSignedIn}= useUser()
   return (
-    <div className="flex flex-col mx-16 items-center mt-[90px] gap-6">
+    <div className="flex flex-col mx-16 items-center gap-2">
       <h2 className="font-bold text-2xl text-center">
         Welcome to <span className="text-fuchsia-500">Yare</span>!
       </h2>
@@ -16,11 +16,15 @@ const Hero = () => {
         your project ideas into reality with the perfect team by your side.
       </p>
       <img src="/hero.svg" className="w-[50%]"/>
-      <button className="block px-8 py-3 text-sm font-medium text-black transition focus:outline-none border rounded-lg border-fuchsia-500 hover: bg-fuchsia-500 hover: text-white">
         {!isSignedIn ? <Link to={"/login"}>
+        <button className="block px-8 py-3 text-sm font-medium text-black transition focus:outline-none border rounded-lg border-fuchsia-500 hover: bg-fuchsia-500 hover: text-white">
         Get started with Yare
-        </Link> : <Link to="/projects">Join the crew!</Link>}
-      </button>
+        </button>
+        </Link> : <Link to="/projects">
+        <button className="block px-8 py-3 text-sm font-medium text-black transition focus:outline-none border rounded-lg border-fuchsia-500 hover: bg-fuchsia-500 hover: text-white">
+        Join the crew!
+        </button>
+        </Link>}
     </div>
   );
 };
