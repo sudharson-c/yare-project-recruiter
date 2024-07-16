@@ -1,75 +1,48 @@
 // eslint-disable-next-line no-unused-vars
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import ProjectCard from './ProjectCard';
+import axios from 'axios';
+import { useUser } from '@clerk/clerk-react';
+import { useNavigate } from 'react-router-dom';
+
 
 const Projects = () => {
-  const projects = [
-    {
-      imgSrc: "https://images.pexels.com/photos/1181467/pexels-photo-1181467.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-      membersOnly: "Members only",
-      title: "Can coffee make you a better developer?",
-      description: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Voluptatibus quia, nulla! Maiores et perferendis eaque, exercitationem praesentium nihil.",
-      authorImg: "https://tailwindcss.com/img/jonathan.jpg",
-      authorName: "Jonathan Reinink",
-      date: "Aug 18"
-    },{
-      imgSrc: "https://images.pexels.com/photos/1181467/pexels-photo-1181467.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-      membersOnly: "Members only",
-      title: "Can coffee make you a better developer?",
-      description: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Voluptatibus quia, nulla! Maiores et perferendis eaque, exercitationem praesentium nihil.",
-      authorImg: "https://tailwindcss.com/img/jonathan.jpg",
-      authorName: "Jonathan Reinink",
-      date: "Aug 18"
-    },{
-      imgSrc: "https://images.pexels.com/photos/1181467/pexels-photo-1181467.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-      membersOnly: "Members only",
-      title: "Can coffee make you a better developer?",
-      description: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Voluptatibus quia, nulla! Maiores et perferendis eaque, exercitationem praesentium nihil.",
-      authorImg: "https://tailwindcss.com/img/jonathan.jpg",
-      authorName: "Jonathan Reinink",
-      date: "Aug 18"
-    },{
-      imgSrc: "https://images.pexels.com/photos/1181467/pexels-photo-1181467.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-      membersOnly: "Members only",
-      title: "Can coffee make you a better developer?",
-      description: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Voluptatibus quia, nulla! Maiores et perferendis eaque, exercitationem praesentium nihil.",
-      authorImg: "https://tailwindcss.com/img/jonathan.jpg",
-      authorName: "Jonathan Reinink",
-      date: "Aug 18"
-    },{
-      imgSrc: "https://images.pexels.com/photos/1181467/pexels-photo-1181467.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-      membersOnly: "Members only",
-      title: "Can coffee make you a better developer?",
-      description: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Voluptatibus quia, nulla! Maiores et perferendis eaque, exercitationem praesentium nihil.",
-      authorImg: "https://tailwindcss.com/img/jonathan.jpg",
-      authorName: "Jonathan Reinink",
-      date: "Aug 18"
-    },{
-      imgSrc: "https://images.pexels.com/photos/1181467/pexels-photo-1181467.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-      membersOnly: "Members only",
-      title: "Can coffee make you a better developer?",
-      description: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Voluptatibus quia, nulla! Maiores et perferendis eaque, exercitationem praesentium nihil.",
-      authorImg: "https://tailwindcss.com/img/jonathan.jpg",
-      authorName: "Jonathan Reinink",
-      date: "Aug 18"
-    },
-    // Add more projects here as needed
-  ];
+  const {isSignedIn} = useUser()
+  const [projects, setProjects] = useState([]);
+  const navigate = useNavigate();
+  useEffect(() => {
+    axios.get('http://localhost:5000/projects')
+      .then((response) => {
+        console.log(response.data);
+        setProjects([...projects,JSON.parse(response.data)]);
+      })
+      .catch((error) => {
+        console.error('Error fetching projects:', error);
+      });
+  }, []);
+  if (!isSignedIn) {
+    navigate('/');
+    return null; 
+  }
 
   return (
     <div className="max-w-screen-xl mx-auto p-3 sm:p-7 md:p-10">
       <div className="grid grid-cols-1 md:grid-cols-3 sm:grid-cols-2 gap-10">
-        {projects.map((project, index) => (
+        {projects.map((project) => (
           <ProjectCard
-            key={index}
-            id={index}
-            imgSrc={project.imgSrc}
-            membersOnly={project.membersOnly}
-            title={project.title}
-            description={project.description}
-            authorImg={project.authorImg}
-            authorName={project.authorName}
-            date={project.date}
+            key={project._id}
+            id={project._id}
+            project_name={project.project_name}
+            project_desc={project.project_desc}
+            project_link={project.project_link}
+            owner={project.owner}
+            collaborators={project.collaborators}
+            status={project.status}
+            stipend={project.stipend}
+            benefits={project.benefits}
+            members_needed={project.members_needed}
+            createdAt={project.createdAt}
+            updatedAt={project.updatedAt}
           />
         ))}
       </div>

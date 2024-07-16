@@ -14,7 +14,9 @@ router.get('/', async (req, res) => {
 
 // Create a new Project
 router.post('/', async (req, res) => {
-  const { project_name, project_desc, project_link, owner, collaborators, status } = req.body;
+  const { project_name, project_desc, project_link, owner, collaborators, status,stipend,
+    benefits,
+    members_needed } = req.body;
   try {
     const project = new Project({
       project_name,
@@ -22,7 +24,10 @@ router.post('/', async (req, res) => {
       project_link,
       owner,
       collaborators,
-      status
+      status,
+      stipend,
+      benefits,
+      members_needed
     });
     await project.save();
     res.status(201).json(project);
