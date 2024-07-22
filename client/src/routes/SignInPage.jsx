@@ -1,19 +1,24 @@
+// SignInPage.js
 import { SignIn, useUser } from "@clerk/clerk-react";
-import { useEffect } from "react";
-import { Navigate } from "react-router-dom";
+import { useEffect, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { UserContext } from "../../context/UserContext";
 
 const SignInPage = () => {
-  const { isSignedIn } = useUser();
+  const { isSignedIn, user } = useUser();
+  const { login } = useContext(UserContext);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (isSignedIn) {
-      <Navigate to={"/projects"}replace={true} />
+      login(user); 
+      navigate("/projects", { replace: true });
     }
-  }, [isSignedIn]);
+  }, [isSignedIn, user, login, navigate]);
 
   return (
     <div className="w-full flex justify-center">
-      <SignIn />
+      <SignIn afterSignInUrl={"/projects"} />
     </div>
   );
 };

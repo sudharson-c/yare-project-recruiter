@@ -1,24 +1,26 @@
 const { Router } = require('express');
 const router = Router(); 
 const Project = require('../models/ProjectModel');
+const User = require('../models/UserModel')
 
 // Get all Projects
 router.get('/', async (req, res) => {
   try {
     const projects = await Project.find().populate('owner collaborators');
-    res.status(200).json(projects);
+    // console.log(projects)
+    res.status(200).json({projectData : projects});
   } catch (error) {
     res.status(500).send(error.message);
   }
 });
 
 // Create a new Project
-router.post('/', async (req, res) => {
-  const { project_name, project_desc, project_link, owner, collaborators, status,stipend,
-    benefits,
-    members_needed } = req.body;
+router.post("/", async (req, res) => {
+  const { project_name, project_desc, project_link, owner, collaborators, status, stipend, benefits, members_needed } = req.body;
+
   try {
-    const project = new Project({
+    // Create a new project
+    const newProject = new Project({
       project_name,
       project_desc,
       project_link,
@@ -29,10 +31,16 @@ router.post('/', async (req, res) => {
       benefits,
       members_needed
     });
-    await project.save();
-    res.status(201).json(project);
+
+    // Save the new project
+    const savedProject = await newProject.save();
+
+    // Update the owner's projectIds field
+    await User.findByIdAndUpdate(owner, { $push: { projectIds: savedProject._id } });
+
+    res.status(201).json(savedProject);
   } catch (error) {
-    res.status(400).send(error.message);
+    res.status(500).json({ message: "Error creating project", error });
   }
 });
 
@@ -71,6 +79,7 @@ router.delete('/:id', async (req, res) => {
   try {
     const project = await Project.findByIdAndDelete(req.params.id);
     if (!project) return res.status(404).send('Project not found');
+    await User.findByIdAndUpdate
     res.status(200).json({ message: 'Project deleted' });
   } catch (error) {
     res.status(500).send(error.message);

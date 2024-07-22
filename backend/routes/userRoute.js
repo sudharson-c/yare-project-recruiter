@@ -22,6 +22,7 @@ router.post('/', async(req, res) => {
             ...req.body
         })
         user = await user.save()
+        console.log(user)
         res.send(user)
     } catch (error) {
         res.status(500).send(error.message)

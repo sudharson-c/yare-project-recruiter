@@ -1,9 +1,13 @@
+/* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
-import React from 'react';
+import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
+import { UserContext } from '../../context/UserContext';
 
 // eslint-disable-next-line react/prop-types
+
 const ProjectCard = ({
+  key,
   _id,
   project_name,
   project_desc,
@@ -17,8 +21,9 @@ const ProjectCard = ({
   createdAt,
   updatedAt
 }) => {
+  const {currentUser} = useContext(UserContext);
   return (
-    <div className="border-r border-b border-l border-gray-400 lg:border-t lg:border-gray-400 bg-white rounded-b lg:rounded-b-none lg:rounded-r flex flex-col justify-between leading-normal">
+    <div className="border rounded-md p-4 ml-0 md:w-100 border-gray-400 lg:border-t lg:border-gray-400 bg-white rounded-b lg:rounded-b-none lg:rounded-r flex flex-col justify-between leading-normal">
       <div className="p-2 pt-2">
         <div className="mb-8">
           <Link to={`/projects/${_id}`} className="text-gray-900 font-bold text-lg mb-2 hover:text-indigo-600 inline-block">
@@ -32,18 +37,19 @@ const ProjectCard = ({
         </div>
         <div className="flex justify-between">
           <div className="flex items-center">
+            {console.log(currentUser)}
             <Link to="#">
-              <img className="w-10 h-10 rounded-full mr-4" src="default-avatar.png" alt={`Avatar of ${owner}`} />
+              <img className="w-10 h-10 rounded-full mr-4" src={owner.avatar} alt={`Avatar of ${owner.avatar}`} />
             </Link>
             <div className="text-sm">
               <Link to="#" className="text-gray-900 font-semibold leading-none hover:text-indigo-600">
-                Owner: {owner}
+                Owner: {owner.name}
               </Link>
               <p className="text-gray-600">Created at: {new Date(createdAt).toLocaleDateString()}</p>
             </div>
           </div>
           <Link to={`/projects/${_id}`}>
-            <button className='border border-fuchsia-500 p-2 rounded-md hover:bg-fuchsia-500 hover:text-white'>Join the project</button>
+            <button className='border border-fuchsia-500 p-2 rounded-md hover:bg-fuchsia-500 hover:text-white'>{currentUser.primaryEmailAddress.emailAddress !== owner.email ? "Join the project" : "View project"}</button>
           </Link>
         </div>
       </div>

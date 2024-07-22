@@ -5,6 +5,7 @@ const Dashboard = () => {
   return (
     <div>
       <h1>Dashboard Page</h1>
+      {console.log(window.localStorage.getItem("user"))}
       <p>All your projects!</p>
     </div>
   );
