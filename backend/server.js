@@ -6,9 +6,9 @@ const projectRouter = require('./routes/projectRoute')
 const userRouter = require('./routes/userRoute')
 
 // Mongo DB Connections
-const connection = require("./config/db")
-
-
+// const connection = require("./config/db")
+//Firebase
+const {fireDb} = require('./config/firebase')
 
 // Middleware Connections
 app.use(cors())
@@ -23,7 +23,6 @@ app.use('/projects', projectRouter);
 // Connection
 const PORT = process.env.PORT || 5000
 app.listen(PORT, ()=>{
-    connection()
     console.log('App running in port: '+PORT)
 })
 

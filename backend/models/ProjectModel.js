@@ -10,6 +10,7 @@ const ProjectSchema = new mongoose.Schema({
   stipend: { type: Number, default: 0 },
   benefits: { type: String, default: '' },
   members_needed: { type: Number, required: true },
+  clerkid : {type:String,required:true}
 }, {
   timestamps: true
 });

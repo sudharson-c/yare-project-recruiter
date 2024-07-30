@@ -14,7 +14,7 @@ const Projects = () => {
     axios.get('http://localhost:5000/projects')
       .then((response) => {
         setProjects(response.data.projectData); // Set all projects
-        // console.log(response.data.projectData); // Log fetched projects
+        console.log(response.data.projectData[1]); // Log fetched projects
       })
       .catch((error) => {
         console.error('Error fetching projects:', error);
@@ -31,10 +31,9 @@ const Projects = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 sm:grid-cols-2 gap-10">
         {projects.length >0 ?
           projects.map((project,index) => (<>
-        
           <ProjectCard
             key={index}
-            _id={project._id}
+            id={project.id}
             project_name={project.project_name}
             project_desc={project.project_desc}
             project_link={project.project_link}

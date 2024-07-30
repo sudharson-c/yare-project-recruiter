@@ -4,10 +4,15 @@ const { Router } = require('express');
 const router = Router(); 
 const User = require('./../models/UserModel') 
 
+const {userDb} = require('../config/firebase')
+const UserDb = userDb;
+
+// const UserDb = fireDb.collection("users")
 // Get all userRoutes
 router.get('/', async(req, res) => {
-    try {
-        const userRoutes = await User.find()
+    try {   
+        const userRoutes = await (await UserDb.get()).docs.map(doc=>({id:doc.id,...doc.data()}))
+        console.log(userDb)
         res.send(userRoutes)
     } catch (error) {
         res.status(500).send(error.message)
@@ -15,25 +20,35 @@ router.get('/', async(req, res) => {
 })
 
 // Create a new userRoute
-router.post('/', async(req, res) => {
-    
+router.post("/", async (req, res) => {
+    const { clerkId, ...userData } = req.body;
     try {
-        let user = new User({
-            ...req.body
-        })
-        user = await user.save()
-        console.log(user)
-        res.send(user)
+      // Check if the user already exists
+      const userRef = userDb.doc(clerkId);
+      const userDoc = await userRef.get();
+      if (userDoc.exists) {
+        return res.status(401).json({ message: "User already exists" });
+      }
+      // Create a new user document
+      const newUser = {
+        ...userData,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      // Add the new user to the Firestore
+      await userRef.set(newUser);
+      res.status(201).json({ id: clerkId, ...newUser });
     } catch (error) {
-        res.status(500).send(error.message)
+      res.status(500).json({ message: "Error creating user", error: error.message });
     }
-})
+  });
 
 // Get userRoute By ID
 router.get('/:id', async(req, res) => {
     try {
-        const user  = await User.findById(req.params.id)
-        res.send(user )
+        // const user  = await User.findById(req.params.id)
+        const user = await (await UserDb.doc(req.params.id).get()).data()
+        res.send(user)
     } catch (error) {
         res.status(500).send(error.message)
     }
