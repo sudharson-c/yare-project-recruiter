@@ -1,52 +1,191 @@
-// eslint-disable-next-line no-unused-vars
-import React, { useContext } from 'react'
-import { UserContext } from '../../context/UserContext'
+import React, { useContext, useState } from "react";
+import axios from "axios";
+import { UserContext } from "../../context/UserContext";
 
-const EditModal = ({project,close}) => {
-    const {currentUser} = useContext(UserContext);
+const EditModal = ({ project, close }) => {
+  const { currentUser } = useContext(UserContext);
+  const [projectDetails, setProjectDetails] = useState({ ...project });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setProjectDetails((prevDetails) => ({
+      ...prevDetails,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      // await axios.put(
+      //   `http://localhost:5000/projects/${project.id}`,
+      //   projectDetails
+      // );
+      window.alert("Project updated successfully");
+      close();
+    } catch (error) {
+      console.error("Error updating project:", error);
+      window.alert("Failed to update the project. Please try again.");
+    }
+  };
+
   return (
-      <div className='fixed flex justify-center items-center mt-[-10%] w-[100vw] h-[100vh] fixed backdrop-blur-md'>
-      <div className='bg-white p-10 rounded-md border border-gray-900 '>
-      <button className='bg-red-500 text-2xl pl-5 pr-5 mt-2 text-white rounded-lg' onClick={close}>X</button>
-      <h1 className='font-bold text-center text-2xl'>Edit {project.project_name}</h1>
-      <div className='flex justify-center items-center flex-col'>
-        <div id='form' className='p-4 '>
-            <fieldset className='flex flex-col gap-3'>
-              <legend className='text-xl font-bold p-4 text-center'>Project Details</legend>
-              <div className='flex gap-2 items-center'>
-                <label className='text-m font-bold'>Project Name:</label>
-                <input type="text" value={project.project_name} className='border border-neutral-500 p-[4px] rounded-md bg-transparent'/>
+    <div
+      id="crud-modal"
+      tabIndex="-1"
+      aria-hidden="true"
+      className={
+        "flex justify-center overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full backdrop-blur-md"
+      }
+    >
+      <div className="relative p-4 w-full max-w-md max-h-full">
+        <div className="relative bg-white rounded-lg shadow dark:bg-gray-700">
+          <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Edit {project.project_name}
+            </h3>
+            <button
+              type="button"
+              className="text-red-400 bg-transparent hover:bg-red-500 hover:text-white rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+              onClick={close}
+            >
+              X<span className="sr-only">Close modal</span>
+            </button>
+          </div>
+          <form className="p-4 md:p-5">
+            <div className="grid gap-4 mb-4 grid-cols-2">
+              <div className="col-span-2">
+                <label
+                  htmlFor="project_name"
+                  className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                >
+                  Project Name:
+                </label>
+                <input
+                  type="text"
+                  name="project_name"
+                  id="project_name"
+                  value={projectDetails.project_name}
+                  onChange={handleChange}
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                  required
+                />
               </div>
-              <div className='flex gap-2'>
-                <label className='text-m font-bold'>Project Name:</label>
-                <input type="text" value={project.project_name} />
+              <div className="col-span-2">
+                <label
+                  htmlFor="project_desc"
+                  className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                >
+                  Project Description:
+                </label>
+                <input
+                  type="text"
+                  name="project_desc"
+                  id="project_desc"
+                  value={projectDetails.project_desc}
+                  onChange={handleChange}
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                  required
+                />
               </div>
-              <div className='flex gap-2'>
-                <label className='text-m font-bold'>Project Name:</label>
-                <input type="text" value={project.project_name} />
+              <div className="col-span-2">
+                <label
+                  htmlFor="project_link"
+                  className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                >
+                  Project Link:
+                </label>
+                <input
+                  type="text"
+                  name="project_link"
+                  id="project_link"
+                  value={projectDetails.project_link}
+                  onChange={handleChange}
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                  required
+                />
               </div>
-              <div className='flex gap-2'>
-                <label className='text-m font-bold'>Project Name:</label>
-                <input type="text" value={project.project_name} />
+              <div className="col-span-2 sm:col-span-1">
+                <label
+                  htmlFor="stipend"
+                  className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                >
+                  Members Needed:
+                </label>
+                <input
+                  type="number"
+                  name="members_needed"
+                  id="members_needed"
+                  value={projectDetails.members_needed}
+                  onChange={handleChange}
+                  min={1}
+                  max={10}
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                  required
+                />
               </div>
-              <div className='flex gap-2'>
-                <label className='text-m font-bold'>Project Name:</label>
-                <input type="text" value={project.project_name} />
+              <div className="col-span-2 sm:col-span-1">
+                <label
+                  htmlFor="stipend"
+                  className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                >
+                  Stipend (in Rs):
+                </label>
+                <input
+                  type="text"
+                  name="stipend"
+                  id="stipend"
+                  value={projectDetails.stipend}
+                  onChange={handleChange}
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                  required
+                />
               </div>
-            </fieldset>
+              <div className="col-span-2">
+                <label
+                  htmlFor="status"
+                  className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                >
+                  Enter the status
+                </label>
+                <select
+                  id="status"
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                  value={projectDetails.status}
+                  onChange={handleChange}
+                >
+                  <option value="active">{projectDetails.status}</option>
+                  <option>IN PROGRESS</option>
+                  <option>COMPLETED</option>
+                </select>
+              </div>
+              <div className="col-span-2">
+                <label
+                  htmlFor="benefits"
+                  className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                >
+                  Benefits:
+                </label>
+                <textarea
+                  id="benefits"
+                  rows="4"
+                  className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                  value={projectDetails.benefits}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+            <button
+              type="submit"
+              className="text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+            >
+              Save
+            </button>
+          </form>
         </div>
-        <div className='flex gap-3 '>
-        <button onClick={close} className='text-red-500'>Cancel</button>
-        <button >Edit</button>
-        {currentUser.primaryEmailAddress.emailAddress ===
-          project.owner.email && <p>Valid User</p>}
-        </div>
-        </div>
-        </div>
+      </div>
     </div>
+  );
+};
 
-  )
-}
-
-export default EditModal
-    
+export default EditModal;
