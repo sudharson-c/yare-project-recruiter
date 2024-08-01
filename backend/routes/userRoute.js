@@ -12,7 +12,6 @@ const UserDb = userDb;
 router.get('/', async(req, res) => {
     try {   
         const userRoutes = await (await UserDb.get()).docs.map(doc=>({id:doc.id,...doc.data()}))
-        console.log(userDb)
         res.send(userRoutes)
     } catch (error) {
         res.status(500).send(error.message)

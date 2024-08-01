@@ -1,10 +1,12 @@
 import React, { useContext, useState } from "react";
 import axios from "axios";
 import { UserContext } from "../../context/UserContext";
+import { useNavigate } from "react-router-dom";
 
 const EditModal = ({ project, close }) => {
   const { currentUser } = useContext(UserContext);
   const [projectDetails, setProjectDetails] = useState({ ...project });
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -13,16 +15,17 @@ const EditModal = ({ project, close }) => {
       [name]: value,
     }));
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // await axios.put(
-      //   `http://localhost:5000/projects/${project.id}`,
-      //   projectDetails
-      // );
+      await axios.put(
+        `http://localhost:5000/projects/${project.id}`,
+        projectDetails
+      );
       window.alert("Project updated successfully");
       close();
+      navigate("/dashboard");
+
     } catch (error) {
       console.error("Error updating project:", error);
       window.alert("Failed to update the project. Please try again.");
@@ -52,7 +55,7 @@ const EditModal = ({ project, close }) => {
               X<span className="sr-only">Close modal</span>
             </button>
           </div>
-          <form className="p-4 md:p-5">
+          <form className="p-4 md:p-5" onSubmit={handleSubmit}>
             <div className="grid gap-4 mb-4 grid-cols-2">
               <div className="col-span-2">
                 <label
@@ -132,9 +135,10 @@ const EditModal = ({ project, close }) => {
                   Stipend (in Rs):
                 </label>
                 <input
-                  type="text"
+                  type="number"
                   name="stipend"
                   id="stipend"
+                  min={0}
                   value={projectDetails.stipend}
                   onChange={handleChange}
                   className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
@@ -150,11 +154,12 @@ const EditModal = ({ project, close }) => {
                 </label>
                 <select
                   id="status"
+                  name="status"
                   className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                   value={projectDetails.status}
                   onChange={handleChange}
                 >
-                  <option value="active">{projectDetails.status}</option>
+                  <option>NEW</option>
                   <option>IN PROGRESS</option>
                   <option>COMPLETED</option>
                 </select>
@@ -168,6 +173,7 @@ const EditModal = ({ project, close }) => {
                 </label>
                 <textarea
                   id="benefits"
+                  name="benefits"
                   rows="4"
                   className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                   value={projectDetails.benefits}

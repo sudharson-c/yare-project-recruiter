@@ -8,6 +8,7 @@ import DeleteModal from "./sub/DeleteModal";
 
 const ProjectDetails = () => {
   const [project, setProject] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [applyModalOpen, setApplyModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -17,10 +18,6 @@ const ProjectDetails = () => {
 
   useEffect(() => {
     const fetchProject = async () => {
-      const storedProject = window.sessionStorage.getItem(project_id);
-      if (storedProject) {
-        setProject(JSON.parse(storedProject));
-      } else {
         try {
           const response = await axios.get(`http://localhost:5000/projects/${project_id}`);
           setProject(response.data);
@@ -28,7 +25,6 @@ const ProjectDetails = () => {
         } catch (error) {
           console.error("Error fetching project details:", error);
         }
-      }
     };
 
     fetchProject();
@@ -116,7 +112,7 @@ const ProjectDetails = () => {
             <h3 className="font-semibold">Status:</h3>
             <p>{project.status}</p>
             <h3 className="font-semibold">Stipend:</h3>
-            <p>${project.stipend}</p>
+            <p>Rs {project.stipend}</p>
             <h3 className="font-semibold">Benefits:</h3>
             <p>{project.benefits}</p>
             <h3 className="font-semibold">Members Needed:</h3>
