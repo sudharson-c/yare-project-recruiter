@@ -31,14 +31,14 @@ router.get('/user/:id', async (req, res) => {
 
 // Create a new Project
 router.post("/", async (req, res) => {
-  const { project_name, project_desc, project_link, owner, collaborators, status, stipend, benefits, members_needed } = req.body;
+  const { project_name, project_desc, project_link, owner, status, stipend, benefits, members_needed } = req.body;
   try {
     const newProject = {
       project_name,
       project_desc,
       project_link,
       owner,
-      collaborators,
+      collaborators: [],
       status,
       stipend,
       benefits,
@@ -49,11 +49,11 @@ router.post("/", async (req, res) => {
 
     const projectSnapshot = await projectDb.where('project_name', '==', project_name).get();
     if (!projectSnapshot.empty) return res.status(409).json({ message: "Project already exists" });
-
+    const userRef = userDb.doc(owner);
+    newProject.owner = (await userRef.get()).data()
     const projectRef = await projectDb.add(newProject);
     console.log(`Project: ${projectRef.id} is created`);
 
-    const userRef = userDb.doc(owner);
     await userRef.update({
       projectIds: firestore.FieldValue.arrayUnion(projectRef.id)
     });
@@ -68,6 +68,7 @@ router.post("/", async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const projectDoc = await projectDb.doc(req.params.id).get();
+
     if (!projectDoc.exists) return res.status(404).send('Project not found');
 
     const currProject = { id: projectDoc.id, ...projectDoc.data() };
@@ -117,7 +118,7 @@ router.delete('/:id', async (req, res) => {
     if (!projectDoc.exists) return res.status(404).send('Project not found');
 
     const projectData = projectDoc.data();
-    const ownerRef = userDb.doc(projectData.owner);
+    const ownerRef = userDb.doc(projectData.owner.clerkId);
     await ownerRef.update({
       projectIds: firestore.FieldValue.arrayRemove(req.params.id)
     });
