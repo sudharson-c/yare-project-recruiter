@@ -30,6 +30,7 @@ router.post("/", async (req, res) => {
       }
       // Create a new user document
       const newUser = {
+        clerkId: clerkId,
         ...userData,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()

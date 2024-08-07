@@ -3,7 +3,8 @@
 import React, { useContext } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { UserButton } from '@clerk/clerk-react';
-import { UserContext } from '../../context/UserContext';
+import { UserContext } from '../../../context/UserContext';
+
 
 const Navbar = () => {
   const { currentUser } = useContext(UserContext);

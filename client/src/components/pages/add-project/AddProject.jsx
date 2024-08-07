@@ -1,8 +1,9 @@
 // eslint-disable-next-line no-unused-vars
-import React, { useContext, useState,useEffect } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { UserContext } from "../../context/UserContext";
+import { UserContext } from "../../../../context/UserContext";
+
 
 const AddProject = () => {
   const { currentUser } = useContext(UserContext);
@@ -13,7 +14,7 @@ const AddProject = () => {
     owner: currentUser.id,
     members_needed: "",
     stipend: "",
-    status: "",
+    status: "NEW", // Initializing with "NEW"
     benefits: "",
   });
   const [error, setError] = useState("");
@@ -26,28 +27,37 @@ const AddProject = () => {
       [name]: value,
     }));
   };
-const validate = ()=>{
-    if(projectDetails.project_name === "" || projectDetails.project_desc === "" || projectDetails.project_link === "" || projectDetails.members_needed === "" || projectDetails.stipend === "" || projectDetails.status === "" || projectDetails.benefits === "")
-      return false
-    return true      
-}
+
+  const validate = () => {
+    if (
+      projectDetails.project_name === "" ||
+      projectDetails.project_desc === "" ||
+      projectDetails.project_link === "" ||
+      projectDetails.members_needed === "" ||
+      projectDetails.stipend === "" ||
+      projectDetails.status === "" ||
+      projectDetails.benefits === ""
+    )
+      return false;
+    return true;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if(!validate(projectDetails)){
+    console.log(projectDetails);
+    if (!validate(projectDetails)) {
       setError("Please fill all the required fields");
       return;
+    } else {
+      try {
+        await axios.post("http://localhost:5000/projects", projectDetails);
+        window.alert("Project added successfully");
+        navigate("/dashboard");
+      } catch (error) {
+        console.error("Error adding project:", error);
+        window.alert("Failed to add the project. Please try again.");
+      }
     }
-    else{
-    try {
-      await axios.post("http://localhost:5000/projects", projectDetails);
-      window.alert("Project added successfully");
-      navigate("/dashboard");
-    } catch (error) {
-      console.error("Error adding project:", error);
-      window.alert("Failed to add the project. Please try again.");
-    }
-  }
   };
 
   useEffect(() => {
@@ -63,8 +73,7 @@ const validate = ()=>{
     <div>
       <h1 className="text-center font-extrabold text-3xl">Add project</h1>
       <div id="form" className="container mx-auto px-10">
-        {error && 
-          <p className="text-red-500 text-center text-xl">{error}</p>}
+        {error && <p className="text-red-500 text-center text-xl">{error}</p>}
         <form className="p-4 md:p-5" onSubmit={handleSubmit}>
           <div className="grid gap-4 mb-4 grid-cols-2">
             <div className="col-span-2">
@@ -162,12 +171,13 @@ const validate = ()=>{
               >
                 Enter the status
               </label>
-
               <select
                 id="status"
                 name="status"
                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                value={projectDetails.status}
                 onChange={handleChange}
+                required
               >
                 <option value="NEW">NEW</option>
                 <option value="IN PROGRESS">IN PROGRESS</option>

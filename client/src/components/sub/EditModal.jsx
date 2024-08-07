@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
 import axios from "axios";
-import { UserContext } from "../../context/UserContext";
 import { useNavigate } from "react-router-dom";
+import { UserContext } from "../../../context/UserContext";
 
 const EditModal = ({ project, close }) => {
   const { currentUser } = useContext(UserContext);

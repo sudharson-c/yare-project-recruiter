@@ -1,18 +1,18 @@
 // eslint-disable-next-line no-unused-vars
 import React, { useContext, useEffect } from 'react';
-import { UserContext, UserProvider } from '../context/UserContext';
 import { useUser } from '@clerk/clerk-react';
-import Navbar from './components/Navbar';
-import Hero from './components/Hero';
+import Navbar from './components/sub/Navbar';
+import Hero from './components/sub/Hero';
 import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
-import SignInPage from './routes/SignInPage';
-import SignUpPage from './routes/SignUpPage';
-import Footer from './components/Footer';
-import Projects from './components/Projects';
-import Dashboard from './components/Dashboard';
-import AddProject from './components/AddProject';
-import ProjectDetails from './components/ProjectDetails';
+import SignUpPage from './routes/SignUpPage'
+import SignInPage from './routes/SignInPage'
 import axios from 'axios';
+import { UserProvider,UserContext } from '../context/UserContext';
+import Projects from './components/pages/projects/Projects';
+import AddProject from './components/pages/add-project/AddProject';
+import Dashboard from './components/pages/dashboard/Dashboard'
+import ProjectDetails from './components/pages/projects/ProjectDetails';
+import Footer from './components/sub/Footer'
 // import { fireDb } from '../../backend/config/firebase';
 
 const App = () => {

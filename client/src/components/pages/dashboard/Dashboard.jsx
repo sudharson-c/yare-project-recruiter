@@ -1,9 +1,9 @@
 // eslint-disable-next-line no-unused-vars
 import React, { useContext, useEffect, useState } from 'react';
-import { UserContext } from '../../context/UserContext';
+import { UserContext } from '../../../../context/UserContext';
 import axios from 'axios';
-import ProjectCard from './ProjectCard';
-import Loading from './Loading';
+import ProjectCard from '../projects/ProjectCard';
+import Loading from '../../sub/Loading';
 
 const Dashboard = () => {
   const { currentUser } = useContext(UserContext);

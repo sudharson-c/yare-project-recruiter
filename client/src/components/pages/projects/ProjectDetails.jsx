@@ -1,10 +1,10 @@
 import axios from "axios";
 import React, { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { UserContext } from "../../context/UserContext";
-import EditModal from "./EditModal";
-import ApplyModal from "./ApplyModal";
-import DeleteModal from "./sub/DeleteModal";
+import { UserContext } from "../../../../context/UserContext";
+import DeleteModal from "../../sub/DeleteModal";
+import EditModal from "../../sub/EditModal";
+import ApplyModal from '../apply/ApplyModal'
 
 const ProjectDetails = () => {
   const [project, setProject] = useState(null);
