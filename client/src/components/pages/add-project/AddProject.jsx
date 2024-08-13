@@ -4,9 +4,10 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../../../context/UserContext";
 
-
 const AddProject = () => {
   const { currentUser } = useContext(UserContext);
+  const [selectedFile, setSelectedFile] = useState(null); // Corrected variable name
+
   const [projectDetails, setProjectDetails] = useState({
     project_name: "",
     project_desc: "",
@@ -14,9 +15,10 @@ const AddProject = () => {
     owner: currentUser.id,
     members_needed: "",
     stipend: "",
-    status: "NEW", // Initializing with "NEW"
+    status: "NEW",
     benefits: "",
   });
+
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
@@ -28,35 +30,42 @@ const AddProject = () => {
     }));
   };
 
+  const handleFileChange = (e) => {
+    setSelectedFile(e.target.files[0]); // Corrected function name
+  };
+
   const validate = () => {
-    if (
-      projectDetails.project_name === "" ||
-      projectDetails.project_desc === "" ||
-      projectDetails.project_link === "" ||
-      projectDetails.members_needed === "" ||
-      projectDetails.stipend === "" ||
-      projectDetails.status === "" ||
-      projectDetails.benefits === ""
-    )
-      return false;
-    return true;
+    return Object.values(projectDetails).every(value => value !== "");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(projectDetails);
-    if (!validate(projectDetails)) {
+
+    if (!validate()) {
       setError("Please fill all the required fields");
       return;
-    } else {
-      try {
-        await axios.post("http://localhost:5000/projects", projectDetails);
-        window.alert("Project added successfully");
-        navigate("/dashboard");
-      } catch (error) {
-        console.error("Error adding project:", error);
-        window.alert("Failed to add the project. Please try again.");
+    } 
+
+    try {
+      const result = await axios.post("http://localhost:5000/projects", projectDetails);
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+        formData.append("username", currentUser.id);
+        formData.append("project_id", result.data.id);
+
+        const uploadResponse = await axios.post(
+          "http://localhost:5000/projects/file",
+          formData
+        );
+        console.log(uploadResponse.data.message);
       }
+
+      window.alert("Project added successfully");
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Error adding project:", error);
+      window.alert("Failed to add the project. Please try again.");
     }
   };
 
@@ -200,6 +209,21 @@ const AddProject = () => {
                 onChange={handleChange}
               />
             </div>
+          </div>
+          <div className="col-span-2">
+            <label
+              htmlFor="project_document"
+              className="block mb-2 text-sm font-medium text-gray-900"
+            >
+              Project Document:
+            </label>
+            <input
+              type="file"
+              name="project_document"
+              id="project_document"
+              onChange={handleFileChange}
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
+            />
           </div>
           <button
             type="submit"

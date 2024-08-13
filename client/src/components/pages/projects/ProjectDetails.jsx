@@ -8,7 +8,7 @@ import ApplyModal from '../apply/ApplyModal'
 
 const ProjectDetails = () => {
   const [project, setProject] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [documentLink, setDocumentLink] = useState(null);
   const [applyModalOpen, setApplyModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -21,6 +21,11 @@ const ProjectDetails = () => {
         try {
           const response = await axios.get(`http://localhost:5000/projects/${project_id}`);
           setProject(response.data);
+          if (project_id) {
+            const documentResponse = await axios.get(`http://localhost:5000/projects/file/${project_id}`,{params:{userId :currentUser.id}});
+            setDocumentLink(documentResponse.data.link);
+            console.log(documentLink)
+          }
           window.sessionStorage.setItem(project_id, JSON.stringify(response.data));
         } catch (error) {
           console.error("Error fetching project details:", error);
@@ -98,14 +103,14 @@ const ProjectDetails = () => {
         <div className="rounded-md p-2">
           <h2 className="text-xl font-bold">{project.project_name}</h2>
           <p className="mt-2">{project.project_desc}</p>
-          <a
+          <b>Github link : <a
             href={project.project_link}
             className="text-blue-500 underline"
             target="_blank"
             rel="noopener noreferrer"
           >
             View Project
-          </a>
+          </a></b>
           <div className="mt-4">
             <h3 className="font-semibold">Owner:</h3>
             <p>{project.owner.firstName + " " + project.owner.lastName}</p>
@@ -142,6 +147,19 @@ const ProjectDetails = () => {
                 Apply
               </button>
             )}
+            {documentLink &&
+            <a
+              href={documentLink}
+              className="none"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+            <button
+              className="text-white bg-green-500 rounded-md p-2 w-max"
+              >
+              Download Document
+            </button>
+            </a>}
           </div>
         </div>
       </center>

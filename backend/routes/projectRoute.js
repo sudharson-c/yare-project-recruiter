@@ -1,7 +1,11 @@
 const { Router } = require('express');
 const router = Router();
+const dbx  = require("../config/dropbox")
+const fileUpload = require("express-fileupload");
 const { projectDb, userDb } = require('../config/firebase'); // Ensure correct imports
 const { firestore } = require('firebase-admin');
+
+const Application = require("../models/Application")
 
 // Get all Projects
 router.get('/', async (req, res) => {
@@ -28,6 +32,46 @@ router.get('/user/:id', async (req, res) => {
     res.status(500).send(error.message);
   }
 });
+
+router.post("/file", fileUpload(), async (req, res) => {
+  const file = req.files.file;
+  const userId = req.body.username;
+  const projectId = req.body.project_id;
+  const folderPath = `/users`;
+
+  try {
+    // Create a directory for the user if it doesn't exist
+    await dbx.filesCreateFolderV2({ path: folderPath });
+
+    // Upload the file to the user's directory
+    const dropboxPath = `${folderPath}/${projectId}/${file.name}`;
+    const uploadResponse = await dbx.filesUpload({
+      path: dropboxPath,
+      contents: file.data,
+      mode: "add",
+      autorename: true,
+      mute: true,
+    });
+    res.json({ message: "File uploaded successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+router.get("/file/:fileId",async (req,res)=>{
+  const fileId = req.params.fileId;
+  const folderPath = `/users`;
+  const dropboxPath = `${folderPath}/${fileId}`;
+  try{
+    const linkResponse = (await dbx.filesListFolder({path:dropboxPath})).result.entries[0]
+    const finalLink = (await dbx.filesGetTemporaryLink({path:linkResponse.path_display})).result.link
+    res.json({ link: finalLink });
+  }catch(err){
+    console.log(err)
+    res.status(500).json({error: err})
+  }
+
+})
 
 // Create a new Project
 router.post("/", async (req, res) => {
