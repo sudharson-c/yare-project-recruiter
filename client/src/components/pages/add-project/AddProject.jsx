@@ -47,20 +47,7 @@ const AddProject = () => {
     } 
 
     try {
-      const result = await axios.post("http://localhost:5000/projects", projectDetails);
-      if (selectedFile) {
-        const formData = new FormData();
-        formData.append("file", selectedFile);
-        formData.append("username", currentUser.id);
-        formData.append("project_id", result.data.id);
-
-        const uploadResponse = await axios.post(
-          "http://localhost:5000/projects/file",
-          formData
-        );
-        console.log(uploadResponse.data.message);
-      }
-
+      await axios.post("http://localhost:5000/projects", projectDetails);
       window.alert("Project added successfully");
       navigate("/dashboard");
     } catch (error) {
@@ -209,21 +196,6 @@ const AddProject = () => {
                 onChange={handleChange}
               />
             </div>
-          </div>
-          <div className="col-span-2">
-            <label
-              htmlFor="project_document"
-              className="block mb-2 text-sm font-medium text-gray-900"
-            >
-              Project Document:
-            </label>
-            <input
-              type="file"
-              name="project_document"
-              id="project_document"
-              onChange={handleFileChange}
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
-            />
           </div>
           <button
             type="submit"

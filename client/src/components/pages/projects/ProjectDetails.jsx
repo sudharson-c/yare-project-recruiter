@@ -1,4 +1,5 @@
 import axios from "axios";
+// eslint-disable-next-line no-unused-vars
 import React, { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { UserContext } from "../../../../context/UserContext";
@@ -8,7 +9,6 @@ import ApplyModal from '../apply/ApplyModal'
 
 const ProjectDetails = () => {
   const [project, setProject] = useState(null);
-  const [documentLink, setDocumentLink] = useState(null);
   const [applyModalOpen, setApplyModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -19,21 +19,25 @@ const ProjectDetails = () => {
   useEffect(() => {
     const fetchProject = async () => {
         try {
-          const response = await axios.get(`http://localhost:5000/projects/${project_id}`);
-          setProject(response.data);
-          if (project_id) {
-            const documentResponse = await axios.get(`http://localhost:5000/projects/file/${project_id}`,{params:{userId :currentUser.id}});
-            setDocumentLink(documentResponse.data.link);
-            console.log(documentLink)
-          }
-          window.sessionStorage.setItem(project_id, JSON.stringify(response.data));
+            const response = await axios.get(`http://localhost:5000/projects/${project_id}`);
+            const projectData = response.data;
+            // Filter applications only for the current user
+            const filteredApplications = projectData.application
+                ? projectData.application.filter((application) => application.applier === currentUser.id)
+                : {};
+            // Update the project state with filtered applications
+            setProject({
+                ...projectData,
+                application: filteredApplications[0],
+            });
+            console.log(project)
         } catch (error) {
-          console.error("Error fetching project details:", error);
+            console.error("Error fetching project details:", error);
         }
     };
 
     fetchProject();
-  }, [project_id]);
+}, [project_id, currentUser.id]);
 
   const handleBack = () => {
     window.history.back();
@@ -67,6 +71,11 @@ const ProjectDetails = () => {
     setEditModalOpen(false);
     setDeleteModalOpen(false);
   };
+  const handleViewApplications =()=>{
+    navigate(`/projects/${project_id}/applications`, {
+      state: { applications: project.application, projectName: project.project_name },
+    });
+  }
 
   if (!project) {
     return (
@@ -99,6 +108,7 @@ const ProjectDetails = () => {
       >
         Go back
       </button>
+
       <center>
         <div className="rounded-md p-2">
           <h2 className="text-xl font-bold">{project.project_name}</h2>
@@ -127,7 +137,7 @@ const ProjectDetails = () => {
             {currentUser.primaryEmailAddress.emailAddress === project.owner.email ? (
               <>
                 <button
-                  className="border border-fuchsia-500 rounded-md p-1 w-max"
+                  className="border border-fuchsia-500 rounded-md p-2 w-max "
                   onClick={handleEdit}
                 >
                   Edit
@@ -138,28 +148,23 @@ const ProjectDetails = () => {
                 >
                   Delete
                 </button>
+                <br />
+                <button onClick={handleViewApplications} className="border border-lime-500 rounded-md p-2">View Applications</button>
               </>
             ) : (
-              <button
+              project.application ?
+              (<strong className={project.application.status==='ACCEPTED'?"text-lime-500":
+                project.application.status==='REJECTED'?"text-red-500":""
+              }>{project.application.status}</strong>):
+              (<button
                 className="border border-fuchsia-500 rounded-md p-1"
                 onClick={handleApply}
               >
                 Apply
-              </button>
+              </button>)
+              
             )}
-            {documentLink &&
-            <a
-              href={documentLink}
-              className="none"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-            <button
-              className="text-white bg-green-500 rounded-md p-2 w-max"
-              >
-              Download Document
-            </button>
-            </a>}
+            
           </div>
         </div>
       </center>

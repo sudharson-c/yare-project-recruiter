@@ -3,18 +3,16 @@ import React from 'react';
 
 const Footer = () => {
   return (
-    <>
-      <footer className="flex justify-between bg-black text-azure-50 p-5 text-center items-center mt-4 text-white">
-        <p>Copyrights @2024</p>
-        <a href="#" className="no-underline text-azure-50">Terms and Conditions</a>
-        <ul className="flex gap-4 list-none">
-            <li><a href="/" className="no-underline text-azure-50">Home</a></li>
-            <li><a href="/" className="no-underline text-azure-50">About</a></li>
-            <li><a href="/" className="no-underline text-azure-50">Contact</a></li>
-        </ul>
-      </footer>
-    </>
+    <footer className="bottom-0 mt-5 left-0 w-full bg-black text-white p-4 flex justify-between items-center">
+    <p className="text-sm">&copy; 2024 Your Company</p>
+      <a href="#" className="text-sm hover:text-gray-300">Terms and Conditions</a>
+      <ul className="flex gap-4">
+        <li><a href="/" className="text-sm hover:text-gray-300">Home</a></li>
+        <li><a href="/about" className="text-sm hover:text-gray-300">About</a></li>
+        <li><a href="/contact" className="text-sm hover:text-gray-300">Contact</a></li>
+      </ul>
+    </footer>
   );
-}
+};
 
 export default Footer;

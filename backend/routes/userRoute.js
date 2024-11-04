@@ -2,7 +2,7 @@ const express = require("express");
 
 const { Router } = require('express');
 const router = Router(); 
-const User = require('./../models/UserModel') 
+const User = require('./../models/UserModel.js') 
 
 const {userDb} = require('../config/firebase')
 const UserDb = userDb;
@@ -47,7 +47,7 @@ router.post("/", async (req, res) => {
 router.get('/:id', async(req, res) => {
     try {
         // const user  = await User.findById(req.params.id)
-        const user = await (await UserDb.doc(req.params.id).get()).data()
+        const user = (await UserDb.doc(req.params.id).get()).data()
         res.send(user)
     } catch (error) {
         res.status(500).send(error.message)
@@ -70,7 +70,7 @@ router.put('/:id', async(req, res) => {
 router.delete('/:id', async(req, res) => {
     try {
         const user  = await User.findByIdAndDelete(req.params.id)
-        res.send(user )
+        res.send(user)
     } catch (error) {
         res.status(500).send(error.message)
     }

@@ -6,7 +6,7 @@ const projectRouter = require('./routes/projectRoute')
 const userRouter = require('./routes/userRoute')
 
 // Mongo DB Connections
-// const connection = require("./config/db")
+const connection = require("./config/db")
 //Firebase
 const {fireDb} = require('./config/firebase')
 

@@ -23,10 +23,9 @@ const ApplicationSchema = new mongoose.Schema({
     },
     status : {
         type : String,
-        enum : ['APPLIED','ACCEPTED','REJECTED'],
+        enum : ['APPLIED','ACCEPTED','REJECTED','ALREADY RECRUITMENT FILLLED'],
         default : 'APPLIED'
     }
 },{timestamps : true})
 
-const ApplicationModel = mongoose.model('ApplicationModel',ApplicationSchema)
-module.exports  = ApplicationModel
+module.exports = mongoose.model('Application',ApplicationSchema)
