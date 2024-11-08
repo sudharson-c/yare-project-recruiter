@@ -4,7 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 
 const Applications = () => {
-  const { id } = useParams(); // Get project ID from route params
+  const { id } = useParams();
   const [applications, setApplications] = useState([]);
   const [project, setProject] = useState({});
   const [loading, setLoading] = useState(true);
@@ -15,7 +15,7 @@ const Applications = () => {
     const fetchApplications = async () => {
       try {
         const response = await axios.get(`http://localhost:5000/projects/project-application/${id}`);
-        setApplications(response.data.projectApplications); // Set applications data from response
+        setApplications(response.data.projectApplications);
         setProject(response.data.projectDetails);
         setLoading(false);
       } catch (err) {
@@ -67,48 +67,63 @@ const Applications = () => {
   if (error) return <p>Error: {error}</p>;
 
   return (
-    <div>
+    <div className="container mx-auto p-6">
       <button
-        className="bg-fuchsia-500 text-white hover:bg-white hover:text-black hover:border-fuchsia-500 p-3 rounded-md"
+        className="bg-fuchsia-500 text-white hover:bg-white hover:text-black hover:border-fuchsia-500 px-4 py-2 mb-6 rounded-lg transition-all"
         onClick={handleBack}
       >
         Back
       </button>
-      <h2 className="text-center text-3xl font-extrabold">
+      <h2 className="text-center text-3xl font-extrabold mb-8">
         Applications for Project {project.project_name}
       </h2>
       {applications.length > 0 ? (
-        <ul className="grid grid-cols-3 sm:grid-cols-1 ">
+        <ul className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {applications.map((application) => (
-            <li key={application._id} className="border p-4 my-2 flex justify-between">
-              <div>
-                <p><strong>Applier Name:</strong> {application.userDetails.firstName + " " + application.userDetails.lastName}</p>
-                <p><strong>Applier Email:</strong> {application.userDetails.email}</p>
-                <p><strong>Applier Phone:</strong> {application.userDetails.phone || "Not available"}</p>
+            <li key={application._id} className="border p-6 rounded-lg shadow-md bg-white flex flex-col justify-between">
+              <div className="mb-4">
+                <p><strong>Applier Name:</strong> {application.userDetails.firstName} {application.userDetails.lastName}</p>
+                <p><strong>Email:</strong> {application.userDetails.email}</p>
+                <p><strong>Phone:</strong> {application.userDetails.phone || "Not available"}</p>
                 <p><strong>Status:</strong> {application.status}</p>
                 <p><strong>Message:</strong> {application.message}</p>
                 <p><strong>Applied At:</strong> {new Date(application.appliedAt).toLocaleDateString()}</p>
               </div>
-              <div className="flex flex-col justify-around gap-2">
-                <button className="p-3 border rounded-md hover:text-white hover:bg-indigo-500 border-indigo-500" onClick={() => handleProfile(application.applier)}>
+              <div className="flex flex-col gap-3">
+                <button
+                  className="bg-indigo-500 text-white py-2 rounded-md hover:bg-indigo-600 transition-all"
+                  onClick={() => handleProfile(application.applier)}
+                >
                   View Profile
                 </button>
-                { application.status === "APPLIED" ? (<>
-                  <button className="p-3 border rounded-md hover:text-white hover:bg-lime-500 border-lime-500" onClick={() => handleAccept(application.applier)}>
-                  Accept
-                </button>
-                <button className="p-3 border rounded-md hover:text-white hover:bg-red-500 border-red-500" onClick={() => handleReject(application.applier)}>
-                  Reject
-                </button>
-                </>) : application.status === "ACCEPTED" ? <h1 className='text-lime-500'>ACCEPTED</h1> 
-                : application.status === "REJECTED" ? <h1 className='text-red-500'>REJECTED</h1> : <h1>PROJECT FILLED RECRUITMENT</h1>
-                }
+                {application.status === "APPLIED" ? (
+                  <>
+                    <button
+                      className="bg-lime-500 text-white py-2 rounded-md hover:bg-lime-600 transition-all"
+                      onClick={() => handleAccept(application.applier)}
+                    >
+                      Accept
+                    </button>
+                    <button
+                      className="bg-red-500 text-white py-2 rounded-md hover:bg-red-600 transition-all"
+                      onClick={() => handleReject(application.applier)}
+                    >
+                      Reject
+                    </button>
+                  </>
+                ) : application.status === "ACCEPTED" ? (
+                  <p className="text-lime-600 font-semibold text-center">ACCEPTED</p>
+                ) : application.status === "REJECTED" ? (
+                  <p className="text-red-600 font-semibold text-center">REJECTED</p>
+                ) : (
+                  <p className="text-gray-500 text-center">PROJECT FILLED RECRUITMENT</p>
+                )}
               </div>
             </li>
           ))}
         </ul>
       ) : (
-        <p>No applications found for this project.</p>
+        <p className="text-center text-gray-500">No applications found for this project.</p>
       )}
     </div>
   );

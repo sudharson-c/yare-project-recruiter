@@ -20,20 +20,26 @@ const ProjectDetails = () => {
       try {
         const response = await axios.get(`http://localhost:5000/projects/${project_id}`);
         const projectData = response.data;
-        const filteredApplications = projectData.application
-          ? projectData.application.filter((application) => application.applier === currentUser.id)
-          : {};
+  
+        // Check if currentUser is defined before accessing its properties
+        const filteredApplications = projectData.application && currentUser
+          ? projectData.application.filter(application => application.applier === currentUser.id)
+          : [];
+  
         setProject({
           ...projectData,
-          application: filteredApplications[0],
+          application: filteredApplications[0] || null, // Set to null if no applications are found
         });
       } catch (error) {
         console.error("Error fetching project details:", error);
       }
     };
-
-    fetchProject();
-  }, [project_id, currentUser.id]);
+  
+    // Only fetch project details if currentUser is defined
+    if (currentUser) {
+      fetchProject();
+    }
+  }, [project_id, currentUser]);  
 
   const handleBack = () => {
     window.history.back();

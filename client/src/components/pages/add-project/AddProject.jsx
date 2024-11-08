@@ -11,7 +11,7 @@ const AddProject = () => {
     project_name: "",
     project_desc: "",
     project_link: "",
-    owner: currentUser.id,
+    owner: currentUser && currentUser.id,
     members_needed: "",
     stipend: 0,
     status: "NEW",
