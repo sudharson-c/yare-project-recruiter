@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 import React, { useContext, useEffect, useState } from 'react';
 import { UserContext } from '../../../../context/UserContext';
 import axios from 'axios';
@@ -17,23 +18,19 @@ const Dashboard = () => {
     const fetchUserProjects = async () => {
       if (currentUser) {
         try {
-          // Fetch all projects created by the user
           const projectsResponse = await axios.get(`http://localhost:5000/projects/user/${currentUser.id}`);
           setUserProjects(projectsResponse.data.userProjects);
-
-          // Fetch all applications made by the user
           const applicationsResponse = await axios.get(`http://localhost:5000/projects/applications/${currentUser.id}`);
           const userApplications = applicationsResponse.data.userApplications;
           const projectsAppliedTo = applicationsResponse.data.projectsAppliedTo;
-          
-          // Combine applications with the corresponding project data
+
           const userApplicationsWithProject = userApplications.map((application) => {
             const project = projectsAppliedTo.find((proj) => proj.id === application.project);
             return { ...application, project };
           });
-    
-          // Update state with combined application and project data
+
           setUserApp(userApplicationsWithProject);
+          setUserProjects(projectsResponse.data.userProjects);
           setLoading(false);
         } catch (error) {
           console.error('Error fetching user projects:', error);
@@ -48,7 +45,7 @@ const Dashboard = () => {
 
   const renderProjects = (status) => {
     const filteredProjects = userProjects.filter((project) => project.status === status);
-    if (filteredProjects.length === 0) return <h1>No projects currently available...</h1>;
+    if (filteredProjects.length === 0) return <p className="text-center text-gray-500">No projects currently available...</p>;
     
     return filteredProjects.map((project) => (
       <ProjectCard
@@ -56,15 +53,9 @@ const Dashboard = () => {
         id={project.id}
         project_name={project.project_name}
         project_desc={project.project_desc}
-        project_link={project.project_link}
         owner={project.owner}
-        collaborators={project.collaborators}
         status={project.status}
-        stipend={project.stipend}
-        benefits={project.benefits}
-        members_needed={project.members_needed}
         createdAt={project.createdAt}
-        updatedAt={project.updatedAt}
       />
     ));
   };
@@ -72,42 +63,64 @@ const Dashboard = () => {
   const renderApplications = () => {
     if (userApplications.length === 0) {
       return (
-        <p className="text-center text-black-500 pt-2">
-          Apply to projects <Link to="/projects" className="text-fuchsia-500">Click here</Link>
+        <p className="text-center text-gray-500 pt-4">
+          Apply to projects <Link to="/projects" className="text-fuchsia-500 font-semibold">Click here</Link>
         </p>
       );
     }
     return userApplications.map((application, index) => (
-      <div key={index} className="pt-2 flex justify-center">
-        <ApplicationCard application={application} projectId={application.project?.id || ''} />
+      <div key={index} className="pt-4 flex justify-center">
+        <ApplicationCard application={application} />
       </div>
     ));
   };
 
   return (
-    <div>
+    <div className="container mx-auto p-6">
       {loading ? (
-        <center><Loading /></center>
+        <div className="flex justify-center items-center min-h-screen">
+          <Loading />
+        </div>
       ) : error ? (
         <p className="text-center text-red-500">{error}</p>
       ) : (
         <>
-          <h1 className="text-center font-bold text-2xl">Dashboard Page</h1>
-          <p className="text-center text-fuchsia-500 pt-2 font-bold">All your projects!</p>
-          <p className="text-center text-black-500 pt-2">New projects:</p>
-          <div className="p-5 w-auto h-max flex justify-evenly flex-wrap gap-5">
-            {renderProjects('NEW')}
+          <h1 className="text-center font-bold text-3xl text-gray-800 mb-6">Dashboard</h1>
+
+          {/* User Projects */}
+          <div className="mb-8">
+            <h2 className="text-center text-fuchsia-600 font-semibold text-xl mb-2">All Your Projects</h2>
+            <div className="flex flex-col space-y-8">
+              <section>
+                <h3 className="text-center text-gray-700 font-semibold mb-4">New Projects</h3>
+                <div className="flex flex-wrap justify-center gap-6">
+                  {renderProjects('NEW')}
+                </div>
+              </section>
+
+              <section>
+                <h3 className="text-center text-blue-500 font-semibold mb-4">In Progress</h3>
+                <div className="flex flex-wrap justify-center gap-6">
+                  {renderProjects("IN PROGRESS")}
+                </div>
+              </section>
+
+              <section>
+                <h3 className="text-center text-green-500 font-semibold mb-4">Completed</h3>
+                <div className="flex flex-wrap justify-center gap-6">
+                  {renderProjects("COMPLETED")}
+                </div>
+              </section>
+            </div>
           </div>
-          <p className="text-center text-blue-500 pt-2">In Progress:</p>
-          <div className="p-5 w-auto h-max flex justify-evenly flex-wrap gap-5">
-            {renderProjects("IN PROGRESS")}
+
+          {/* User Applications */}
+          <div className="flex flex-col mt-10">
+            <h2 className="text-center text-fuchsia-600 font-semibold text-xl mb-2">Your Applications</h2>
+            <div className="flex flex-col space-y-6 "> 
+              {renderApplications()}
+            </div>
           </div>
-          <p className="text-center text-green-500 pt-2">Completed:</p>
-          <div className="p-5 w-auto h-max flex justify-evenly flex-wrap gap-5">
-            {renderProjects("COMPLETED")}
-          </div>
-          <p className="text-center text-fuchsia-500 pt-2 font-bold">Your Applications!</p>
-          {renderApplications()}
         </>
       )}
     </div>

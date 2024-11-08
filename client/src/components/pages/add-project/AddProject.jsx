@@ -6,7 +6,6 @@ import { UserContext } from "../../../../context/UserContext";
 
 const AddProject = () => {
   const { currentUser } = useContext(UserContext);
-  const [selectedFile, setSelectedFile] = useState(null); // Corrected variable name
 
   const [projectDetails, setProjectDetails] = useState({
     project_name: "",
@@ -14,7 +13,7 @@ const AddProject = () => {
     project_link: "",
     owner: currentUser.id,
     members_needed: "",
-    stipend: "",
+    stipend: 0,
     status: "NEW",
     benefits: "",
   });
@@ -28,10 +27,6 @@ const AddProject = () => {
       ...prevDetails,
       [name]: value,
     }));
-  };
-
-  const handleFileChange = (e) => {
-    setSelectedFile(e.target.files[0]); // Corrected function name
   };
 
   const validate = () => {
