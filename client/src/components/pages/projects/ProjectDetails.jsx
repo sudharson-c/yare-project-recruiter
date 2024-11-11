@@ -5,6 +5,7 @@ import { UserContext } from "../../../../context/UserContext";
 import DeleteModal from "../../sub/DeleteModal";
 import EditModal from "../../sub/EditModal";
 import ApplyModal from "../apply/ApplyModal";
+import ProfileButton from "../profile/ProfileButton";
 
 const ProjectDetails = () => {
   const [project, setProject] = useState(null);
@@ -20,29 +21,23 @@ const ProjectDetails = () => {
       try {
         const response = await axios.get(`http://localhost:5000/projects/${project_id}`);
         const projectData = response.data;
-  
-        // Check if currentUser is defined before accessing its properties
         const filteredApplications = projectData.application && currentUser
           ? projectData.application.filter(application => application.applier === currentUser.id)
           : [];
-  
         setProject({
           ...projectData,
-          application: filteredApplications[0] || null, // Set to null if no applications are found
+          application: filteredApplications[0] || null,
         });
       } catch (error) {
         console.error("Error fetching project details:", error);
       }
     };
-  
-    // Only fetch project details if currentUser is defined
-    if (currentUser) {
-      fetchProject();
-    }
-  }, [project_id, currentUser]);  
+
+    if (currentUser) fetchProject();
+  }, [project_id, currentUser]);
 
   const handleBack = () => {
-    window.history.back();
+    navigate(-1);
   };
 
   const handleDeleteProject = async () => {
@@ -56,18 +51,9 @@ const ProjectDetails = () => {
     }
   };
 
-  const handleEdit = () => {
-    setEditModalOpen(true);
-  };
-
-  const handleApply = () => {
-    setApplyModalOpen(true);
-  };
-
-  const handleDelete = () => {
-    setDeleteModalOpen(true);
-  };
-
+  const handleEdit = () => setEditModalOpen(true);
+  const handleApply = () => setApplyModalOpen(true);
+  const handleDelete = () => setDeleteModalOpen(true);
   const handleModalClose = () => {
     setApplyModalOpen(false);
     setEditModalOpen(false);
@@ -82,14 +68,14 @@ const ProjectDetails = () => {
 
   if (!project) {
     return (
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center py-20">
         <button
-          className="border border-fuchsia-500 rounded-md px-4 py-2 mb-4 hover:bg-fuchsia-500 hover:text-white"
+          className="border border-fuchsia-500 rounded-md px-4 py-2 mb-6 hover:bg-fuchsia-500 hover:text-white transition"
           onClick={handleBack}
         >
           Go back
         </button>
-        Loading project details...
+        <p>Loading project details...</p>
       </div>
     );
   }
@@ -98,27 +84,22 @@ const ProjectDetails = () => {
     <div className="container mx-auto p-6">
       {applyModalOpen && <ApplyModal project={project} close={handleModalClose} />}
       {editModalOpen && <EditModal project={project} close={handleModalClose} />}
-      {deleteModalOpen && (
-        <DeleteModal
-          project={project}
-          close={handleModalClose}
-          onDelete={handleDeleteProject}
-        />
-      )}
+      {deleteModalOpen && <DeleteModal project={project} close={handleModalClose} onDelete={handleDeleteProject} />}
+      
       <div className="flex justify-start mb-6">
         <button
-          className="border border-fuchsia-500 rounded-md px-4 py-2 hover:bg-fuchsia-500 hover:text-white"
+          className="border border-fuchsia-500 rounded-md px-4 py-2 hover:bg-fuchsia-500 hover:text-white transition"
           onClick={handleBack}
         >
           Go back
         </button>
       </div>
 
-      <div className="max-w-3xl mx-auto bg-white shadow-md rounded-md p-6">
-        <h2 className="text-2xl font-bold text-center mb-4">{project.project_name}</h2>
-        <p className="text-gray-700 text-center mb-4">{project.project_desc}</p>
+      <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-lg p-8">
+        <h2 className="text-3xl font-bold text-center text-fuchsia-600 mb-6">{project.project_name}</h2>
+        <p className="text-gray-600 text-center mb-6">{project.project_desc}</p>
 
-        <div className="flex flex-col items-center space-y-2">
+        <div className="flex flex-col items-center space-y-4">
           <p>
             <b>Github link:</b>{" "}
             <a
@@ -136,25 +117,35 @@ const ProjectDetails = () => {
           <p><strong>Benefits:</strong> {project.benefits}</p>
           <p><strong>Members Needed:</strong> {project.members_needed}</p>
         </div>
+          <ul>
+            <strong className="text-center px-3 flex justify-center pt-2">Collaborators:</strong><br />
+            <div className="flex gap-2 justify-evenly -mt-2">
+            {project.collaborators.map((person, index) => (
+              <li key={index} className="flex items-center gap-2">
+                <ProfileButton person={person} />
+              </li>
+            ))}
+            </div>
+          </ul>
 
         <div className="flex justify-center mt-6 gap-4">
           {currentUser.primaryEmailAddress.emailAddress === project.owner.email ? (
             <>
               <button
-                className="border border-fuchsia-500 rounded-md px-4 py-2 hover:bg-fuchsia-500 hover:text-white"
+                className="border border-fuchsia-500 rounded-md px-4 py-2 hover:bg-fuchsia-500 hover:text-white transition"
                 onClick={handleEdit}
               >
                 Edit
               </button>
               <button
-                className="text-white bg-red-500 rounded-md px-4 py-2 hover:bg-red-600"
+                className="text-white bg-red-500 rounded-md px-4 py-2 hover:bg-red-600 transition"
                 onClick={handleDelete}
               >
                 Delete
               </button>
               <button
                 onClick={handleViewApplications}
-                className="border border-lime-500 rounded-md px-4 py-2 hover:bg-lime-500 hover:text-white"
+                className="border border-lime-500 rounded-md px-4 py-2 hover:bg-lime-500 hover:text-white transition"
               >
                 View Applications
               </button>
@@ -166,19 +157,22 @@ const ProjectDetails = () => {
                   ? "text-lime-500"
                   : project.application.status === "REJECTED"
                   ? "text-red-500"
-                  : ""
+                  : "text-gray-600"
               }
             >
               {project.application.status}
             </strong>
-          ) : (
+          ) : project.members_needed >0? 
+            (
             <button
-              className="border border-fuchsia-500 rounded-md px-4 py-2 hover:bg-fuchsia-500 hover:text-white"
+              className="border border-fuchsia-500 rounded-md px-4 py-2 hover:bg-fuchsia-500 hover:text-white transition"
               onClick={handleApply}
             >
               Apply
             </button>
-          )}
+          ): 
+           <p className="text-xl text-center">Recruitment filled!</p>
+          }
         </div>
       </div>
     </div>

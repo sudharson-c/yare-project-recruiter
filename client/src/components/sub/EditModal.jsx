@@ -24,7 +24,7 @@ const EditModal = ({ project, close }) => {
       );
       window.alert("Project updated successfully");
       close();
-      navigate("/dashboard");
+      navigate(0);
 
     } catch (error) {
       console.error("Error updating project:", error);

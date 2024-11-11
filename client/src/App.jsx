@@ -52,9 +52,9 @@ const App = () => {
           <Navbar />
           <div className="pt-6">
             <Routes>
-              <Route path="/" element={<Hero />} />
               <Route path="/login" element={<SignInPage />} />
               <Route path="/sign-up" element={<SignUpPage />} />
+              <Route path="/" element={<Hero />} />
 
               <Route element={<ProtectedRoute />}>
                 <Route path="/projects" element={<Projects />} />

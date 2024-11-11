@@ -6,18 +6,20 @@ import { useNavigate } from "react-router-dom";
 const ApplyModal = ({ project, close }) => {
   const { currentUser } = useContext(UserContext);
   const [userMessage, setMsg] = useState("");
+  const [userLink, setLink] = useState("");
   const [formData, setFormData] = useState({
     projectId: project.id,
     applier: currentUser.id,
     owner: project.owner.clerkId,
     message: userMessage,
+    resume : userLink
   });
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const finalData = { ...formData, message: userMessage };
+      const finalData = { ...formData, message: userMessage,resume : userLink };
       const response = await axios.post("http://localhost:5000/projects/apply", finalData);
       window.alert(response.data.message);
       close();
@@ -33,7 +35,10 @@ const ApplyModal = ({ project, close }) => {
     setMsg(e.target.value);
     setFormData((prevData) => ({ ...prevData, message: e.target.value }));
   };
-
+  const handleLink =(e)=>{
+    setLink(e.target.value);
+    setFormData((prevData)=>({ ...prevData, resume : userLink}))
+  }
   return (
     <div
       id="crud-modal"
@@ -94,18 +99,35 @@ const ApplyModal = ({ project, close }) => {
                   onChange={handleChange}
                 />
               </div>
+              <div className="col-span-2">
+                <label
+                  htmlFor="message"
+                  className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                >
+                  Enter your resume drive link:
+                </label>
+                <input
+                  id="link"
+                  name="link"
+                  rows="4"
+                  className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                  placeholder="Resume Drive link"
+                  onChange={handleLink}
+                  required
+                />
+              </div>
             </div>
-            <div className="flex gap-5 justify-evenly">
+              <div className="flex gap-5 justify-evenly">
               <button
                 type="submit"
                 className="text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-              >
+                >
                 Apply
               </button>
               <button
                 onClick={close}
                 className="text-white inline-flex items-center border border-red-500 text-red-600 hover:bg-red-600 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-              >
+                >
                 Cancel
               </button>
             </div>

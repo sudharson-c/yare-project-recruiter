@@ -16,8 +16,8 @@ const ApplicationCard = (applicationDetail) => {
           <Loading />
         </center>
       ) : (
-        <div className="px-10 flex flex-row justify-between border border-black rounded-md p-4 w-2/3">
-          <div className="flex flex-col w-1/2">
+        <div className="px-10 flex flex-row justify-around border border-black rounded-md p-4 w-[80%]">
+          <div className="flex flex-col w-1/3">
             <h3 className="font-bold text-lg">Application Details</h3>
             <p>
               <strong>Applied At:</strong>{" "}
@@ -30,7 +30,7 @@ const ApplicationCard = (applicationDetail) => {
               <strong>Message:</strong> {application.message}
             </p>
           </div>
-          <div className="flex justify-center w-1/2">
+          <div className="flex justify-between w-2/3 items-center">
             <div className="flex flex-col">
               <h3 className="font-bold text-lg">
                 Project Name: {application.project.project_name}

@@ -25,6 +25,10 @@ const ApplicationSchema = new mongoose.Schema({
         type : String,
         enum : ['APPLIED','ACCEPTED','REJECTED','ALREADY RECRUITMENT FILLLED'],
         default : 'APPLIED'
+    },
+    resume:{
+        type: String,
+        required : true
     }
 },{timestamps : true})
 

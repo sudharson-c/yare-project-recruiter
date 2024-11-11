@@ -20,18 +20,23 @@ router.get('/', async (req, res) => {
 // Get Projects for a specific user
 router.get('/user/:id', async (req, res) => {
   const userId = req.params.id;
-
   try {
     const userDoc = await userDb.doc(userId).get();
     if (!userDoc.exists) return res.status(404).send("User not found");
-    const userProjectsSnapshot = await projectDb.where('owner.clerkId', '==', userId).get();
-    const userProjects = userProjectsSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
     const userData = userDoc.data();
-    res.status(200).json({ userProjects: userProjects });
+    // Use Promise.all to wait for all project data to resolve
+    const userProjects = await Promise.all(
+      userData.projectIds.map(async (projectId) => {
+        const projectDoc = await projectDb.doc(projectId).get();
+        return projectDoc.exists ? { id: projectId, ...projectDoc.data() } : null;
+      })
+    );
+    res.status(200).json({ userProjects: userProjects.filter(project => project !== null) });
   } catch (error) {
     res.status(500).send(error.message);
   }
 });
+
 
 // router.post("/file", fileUpload(), async (req, res) => {
 //   const file = req.files.file;
@@ -116,6 +121,13 @@ router.get('/:id', async (req, res) => {
     const userRef = userDb.doc(currProject.owner.clerkId);
     const userDoc = await userRef.get();
     currProject.owner = userDoc.exists ? userDoc.data() : null;
+    currProject.collaborators = await Promise.all(
+      currProject.collaborators.map(async (person) => {
+        const userDoc = await userDb.doc(person).get();
+        const userData = userDoc.exists ? userDoc.data() : null;
+        return userData ? { userId: person, userName: `${userData.firstName} ${userData.lastName}` ,userAvatar : userData.avatar} : null;
+      })
+    );
     const applicationExist = await Application.find({projectId:currProject.id})
     if (applicationExist)
         currProject = {...currProject,application:applicationExist}
@@ -236,6 +248,12 @@ router.delete('/:id', async (req, res) => {
       projectIds: firestore.FieldValue.arrayRemove(req.params.id)
     });
     await Application.deleteMany({projectId:req.params.id})
+    await projectData.collaborators.map(async collab=>{
+        const collabRef = await userDb.doc(collab);
+        collabRef.update({
+          projectIds: firestore.FieldValue.arrayRemove(req.params.id)
+        })
+    })
     await projectRef.delete();
     res.status(200).json({ message: 'Project deleted' });
   } catch (error) {

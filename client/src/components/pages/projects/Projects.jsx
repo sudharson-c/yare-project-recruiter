@@ -15,7 +15,7 @@ const Projects = () => {
   useEffect(() => {
     axios.get('http://localhost:5000/projects')
       .then((response) => {
-        setProjects(response.data.projectData); // Set all projects
+        setProjects(response.data.projectData);
         setLoading(false);
       })
       .catch((error) => {
@@ -30,33 +30,47 @@ const Projects = () => {
   }
 
   return (
-    <div className="max-w-screen-xl mx-auto p-3 sm:p-7 md:p-10">
+    <div className="max-w-screen-xl mx-auto px-6 py-10">
       {loading ? (
-        <center><Loading /></center>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1 gap-5 sm:justify-center">
-          {projects.length > 0 ? (
-            projects.map((project, index) => (
-              <ProjectCard
-                key={index}
-                id={project.id}
-                project_name={project.project_name}
-                project_desc={project.project_desc}
-                project_link={project.project_link}
-                owner={project.owner}
-                collaborators={project.collaborators}
-                status={project.status}
-                stipend={project.stipend}
-                benefits={project.benefits}
-                members_needed={project.members_needed}
-                createdAt={project.createdAt}
-                updatedAt={project.updatedAt}
-              />
-            ))
-          ) : (
-            <center><h1>No projects found...</h1></center>
-          )}
+        <div className="flex justify-center items-center h-96">
+          <Loading />
         </div>
+      ) : (
+        <>
+          {projects.length > 0 ? (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {projects.map((project, index) => (
+                <ProjectCard
+                  key={index}
+                  id={project.id}
+                  project_name={project.project_name}
+                  project_desc={project.project_desc}
+                  project_link={project.project_link}
+                  owner={project.owner}
+                  collaborators={project.collaborators}
+                  status={project.status}
+                  stipend={project.stipend}
+                  benefits={project.benefits}
+                  members_needed={project.members_needed}
+                  createdAt={project.createdAt}
+                  updatedAt={project.updatedAt}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-96">
+              <h1 className="text-3xl font-semibold text-gray-700 mb-4 text-center">
+                Oops! No projects found...
+              </h1>
+              <button
+                onClick={() => navigate('/add-project')}
+                className="mt-2 px-6 py-3 text-lg font-medium text-fuchsia-500 border border-fuchsia-500 rounded-md hover:bg-fuchsia-500 hover:text-white transition duration-200"
+              >
+                Add New Project!
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

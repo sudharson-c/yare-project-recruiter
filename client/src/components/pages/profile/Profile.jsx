@@ -1,14 +1,20 @@
+// eslint-disable-next-line no-unused-vars
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 
 const Profile = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+  
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
+    if (!id || id === "undefined") {
+      navigate("/");
+      return;
+    }
     const fetchUserProfile = async () => {
       try {
         const response = await axios.get(`http://localhost:5000/users/${id}`);
@@ -24,47 +30,47 @@ const Profile = () => {
   }, [id]);
 
   const handleBack = () => {
-    window.history.back();
+    navigate(-1);
   };
 
   if (loading) return <p>Loading profile...</p>;
 
   return (
-    <div className="h-[38rem] flex flex-col items-center py-10">
+    <div className="flex flex-col items-center py-10 min-h-screen bg-gray-100">
       <button
-        className="bg-fuchsia-500 text-white hover:bg-white hover:text-black hover:border hover:border-fuchsia-500 px-5 py-2 mb-5 rounded-lg transition-all"
+        className="bg-fuchsia-500 text-white hover:bg-fuchsia-600 px-5 py-2 mb-5 rounded-lg transition-all shadow-md"
         onClick={handleBack}
       >
         Back
       </button>
-      <div className="flex flex-col lg:flex-row items-center lg:items-start gap-10 bg-white shadow-lg rounded-lg p-8 max-w-4xl">
+      <div className="bg-white shadow-lg rounded-lg p-8 max-w-4xl w-full flex flex-col lg:flex-row items-center lg:items-start gap-10">
         {userProfile.avatar && (
           <img
             src={userProfile.avatar}
             alt={`${userProfile.firstName}'s avatar`}
-            className="w-48 h-48 rounded-full shadow-md"
+            className="w-48 h-48 rounded-full shadow-md border-4 border-fuchsia-500"
           />
         )}
-        <div className="flex flex-col text-lg space-y-4">
-          <div className="flex gap-3">
-            <strong className="text-gray-700">Name:</strong>
-            <p>{userProfile.firstName} {userProfile.lastName}</p>
+        <div className="flex flex-col text-lg space-y-4 w-full">
+          <div className="flex gap-3 items-center">
+            <strong className="text-gray-600">Name:</strong>
+            <p className="text-gray-800">{userProfile.firstName} {userProfile.lastName}</p>
           </div>
-          <div className="flex gap-3">
-            <strong className="text-gray-700">Email:</strong>
-            <p>{userProfile.email}</p>
+          <div className="flex gap-3 items-center">
+            <strong className="text-gray-600">Email:</strong>
+            <p className="text-gray-800">{userProfile.email}</p>
           </div>
-          <div className="flex gap-3">
-            <strong className="text-gray-700">Role:</strong>
-            <p>{userProfile.role}</p>
+          <div className="flex gap-3 items-center">
+            <strong className="text-gray-600">Role:</strong>
+            <p className="text-gray-800">{userProfile.role}</p>
           </div>
-          <div className="flex gap-3">
-            <strong className="text-gray-700">Created At:</strong>
-            <p>{new Date(userProfile.createdAt).toDateString()}</p>
+          <div className="flex gap-3 items-center">
+            <strong className="text-gray-600">Created At:</strong>
+            <p className="text-gray-800">{new Date(userProfile.createdAt).toDateString()}</p>
           </div>
-          <div className="flex gap-3">
-            <strong className="text-gray-700">Contact:</strong>
-            <p className={userProfile.phone ? "" : "text-red-500"}>
+          <div className="flex gap-3 items-center">
+            <strong className="text-gray-600">Contact:</strong>
+            <p className={userProfile.phone ? "text-gray-800" : "text-red-500"}>
               {userProfile.phone ? userProfile.phone : "Not Available"}
             </p>
           </div>

@@ -78,7 +78,7 @@ const Applications = () => {
         Applications for Project {project.project_name}
       </h2>
       {applications.length > 0 ? (
-        <ul className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {applications.map((application) => (
             <li key={application._id} className="border p-6 rounded-lg shadow-md bg-white flex flex-col justify-between">
               <div className="mb-4">
@@ -88,6 +88,7 @@ const Applications = () => {
                 <p><strong>Status:</strong> {application.status}</p>
                 <p><strong>Message:</strong> {application.message}</p>
                 <p><strong>Applied At:</strong> {new Date(application.appliedAt).toLocaleDateString()}</p>
+                <p><strong>Resume Link:</strong><a href={application.resume} className="hover:text-blue-500" target="_blank">{application.resume}</a></p>
               </div>
               <div className="flex flex-col gap-3">
                 <button
