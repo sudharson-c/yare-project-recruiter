@@ -79,6 +79,10 @@ const ProjectDetails = () => {
       </div>
     );
   }
+  const handleRemoveCollab = (collaboratorId)=>{
+      axios.delete(`http://localhost:5000/projects/collaborators/${collaboratorId}`);
+      setProject({...project,collaborators: project.collaborators.filter(collaborator => collaborator.id !== collaboratorId)});
+  }
 
   return (
     <div className="container mx-auto p-6">
@@ -119,10 +123,13 @@ const ProjectDetails = () => {
         </div>
           <ul>
             <strong className="text-center px-3 flex justify-center pt-2">Collaborators:</strong><br />
-            <div className="flex gap-2 justify-evenly -mt-2">
+            <div className="flex flex-col gap-2 justify-center mt-2 mx-auto">
             {project.collaborators.map((person, index) => (
-              <li key={index} className="flex items-center gap-2">
+              <li key={index} className="flex items-center justify-around gap-2">
                 <ProfileButton person={person} />
+                <div>
+                  <button className="btn border border-red-500 p-2 rounded-lg hover:bg-rose-500 hover:text-white" onClick={()=>handleRemoveCollab(person)}>Remove</button>
+                </div>
               </li>
             ))}
             </div>

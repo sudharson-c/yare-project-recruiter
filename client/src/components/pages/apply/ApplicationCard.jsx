@@ -16,7 +16,7 @@ const ApplicationCard = (applicationDetail) => {
           <Loading />
         </center>
       ) : (
-        <div className="px-10 flex flex-row justify-around border border-black rounded-md p-4 w-[80%]">
+        <div className="px-10 flex justify-around border border-black rounded-md p-4 w-[80%] ">
           <div className="flex flex-col w-1/3">
             <h3 className="font-bold text-lg">Application Details</h3>
             <p>

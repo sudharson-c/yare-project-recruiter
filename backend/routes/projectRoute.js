@@ -234,7 +234,6 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-router.put('')
 // Delete Project By ID
 router.delete('/:id', async (req, res) => {
   try {
@@ -330,6 +329,56 @@ router.put("/project-application/reject/:id", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).send(err.message);
+  }
+});
+
+router.delete("/collaborators/:id", async (req, res) => {
+  const { ownerId, collaboratorId } = req.body;
+  const projectId = req.params.id;
+
+  try {
+    const projectRef = projectDb.doc(projectId);
+    const projectSnapshot = await projectRef.get();
+    const projectDoc = projectSnapshot.exists ? projectSnapshot.data() : null;
+
+    if (!projectDoc) {
+      return res.status(404).send("Project not found");
+    }
+
+    // Step 1: Update project to remove collaboratorId from its collaborators list
+    const updatedCollaborators = projectDoc.collaborators.filter(
+      (collab) => collab !== collaboratorId
+    );
+    const newNeed = projectDoc.members_needed +1;
+    await projectRef.update({ members_needed: newNeed,collaborators: updatedCollaborators });
+
+    // Step 2: Update collaborator's document to remove projectId from their project list
+    const collaboratorRef = userDb.doc(collaboratorId);
+    const collaboratorSnapshot = await collaboratorRef.get();
+    const collaboratorData = collaboratorSnapshot.exists ? collaboratorSnapshot.data() : null;
+
+    if (collaboratorData) {
+      const updatedProjectIds = collaboratorData.projectIds.filter(
+        (project) => project !== projectId
+      );
+      await collaboratorRef.update({ projectIds: updatedProjectIds });
+    }
+
+    // Step 3: Update owner’s document to remove collaboratorId from their collaborator list (optional)
+    const ownerRef = userDb.doc(ownerId);
+    const ownerSnapshot = await ownerRef.get();
+    const ownerData = ownerSnapshot.exists ? ownerSnapshot.data() : null;
+
+    if (ownerData) {
+      const updatedOwnerCollaborators = ownerData.collaboratorIds.filter(
+        (collab) => collab !== collaboratorId
+      );
+      await ownerRef.update({ collaboratorIds: updatedOwnerCollaborators });
+    }
+    return res.status(200).send("Collaborator removed successfully");
+  } catch (err) {
+    console.log(err.message);
+    return res.status(500).json({ error: err.message });
   }
 });
 
