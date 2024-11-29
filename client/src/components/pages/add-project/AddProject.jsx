@@ -30,7 +30,7 @@ const AddProject = () => {
   };
 
   const validate = () => {
-    return Object.values(projectDetails).every(value => value !== "");
+    return Object.values(projectDetails).every((value) => value !== "");
   };
 
   const handleSubmit = async (e) => {
@@ -39,10 +39,10 @@ const AddProject = () => {
     if (!validate()) {
       setError("Please fill all the required fields");
       return;
-    } 
+    }
 
     try {
-      await axios.post("http://localhost:5000/projects", projectDetails);
+      await axios.post(`${process.env.API_URL}/projects`, projectDetails);
       window.alert("Project added successfully");
       navigate("/dashboard");
     } catch (error) {

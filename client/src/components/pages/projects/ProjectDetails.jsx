@@ -47,7 +47,7 @@ const ProjectDetails = () => {
 
   const handleDeleteProject = async () => {
     try {
-      await axios.delete(`http://localhost:5000/projects/${project_id}`);
+      await axios.delete(`${process.env.API_URL}/projects/${project_id}`);
       window.alert("Deleted successfully");
       navigate("/projects");
     } catch (error) {
@@ -89,7 +89,7 @@ const ProjectDetails = () => {
   }
   const handleRemoveCollab = (collaboratorId) => {
     axios.delete(
-      `http://localhost:5000/projects/collaborators/${collaboratorId}`
+      `${process.env.API_URL}/projects/collaborators/${collaboratorId}`
     );
     setProject({
       ...project,

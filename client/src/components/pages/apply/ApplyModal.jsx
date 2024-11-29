@@ -21,7 +21,7 @@ const ApplyModal = ({ project, close }) => {
     try {
       const finalData = { ...formData, message: userMessage, resume: userLink };
       const response = await axios.post(
-        "http://localhost:5000/projects/apply",
+        `${process.env.API_URL}/projects/apply`,
         finalData
       );
       window.alert(response.data.message);

@@ -1,10 +1,10 @@
 // eslint-disable-next-line no-unused-vars
-import React, { useContext, useEffect, useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import { UserContext } from '../../../../context/UserContext';
-import Loading from '../../sub/Loading';
-import ProjectCard from './ProjectCard';
+import React, { useContext, useEffect, useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { UserContext } from "../../../../context/UserContext";
+import Loading from "../../sub/Loading";
+import ProjectCard from "./ProjectCard";
 
 const Projects = () => {
   const { currentUser } = useContext(UserContext);
@@ -13,19 +13,21 @@ const Projects = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get('http://localhost:5000/projects')
+    console.log(process.env.API_URL);
+    axios
+      .get(`http://localhost:5000/projects`)
       .then((response) => {
         setProjects(response.data.projectData);
         setLoading(false);
       })
       .catch((error) => {
-        console.error('Error fetching projects:', error);
+        console.error("Error fetching projects:", error);
         setLoading(false);
       });
   }, []);
 
   if (!currentUser) {
-    navigate('/');
+    navigate("/");
     return null;
   }
 
@@ -63,7 +65,7 @@ const Projects = () => {
                 Oops! No projects found...
               </h1>
               <button
-                onClick={() => navigate('/add-project')}
+                onClick={() => navigate("/add-project")}
                 className="mt-2 px-6 py-3 text-lg font-medium text-fuchsia-500 border border-fuchsia-500 rounded-md hover:bg-fuchsia-500 hover:text-white transition duration-200"
               >
                 Add New Project!

@@ -6,7 +6,7 @@ import axios from "axios";
 const Profile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  
+
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -17,7 +17,7 @@ const Profile = () => {
     }
     const fetchUserProfile = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/users/${id}`);
+        const response = await axios.get(`${process.env.API_URL}/users/${id}`);
         setUserProfile(response.data);
         setLoading(false);
       } catch (error) {
@@ -54,7 +54,9 @@ const Profile = () => {
         <div className="flex flex-col text-lg space-y-4 w-full">
           <div className="flex gap-3 items-center">
             <strong className="text-gray-600">Name:</strong>
-            <p className="text-gray-800">{userProfile.firstName} {userProfile.lastName}</p>
+            <p className="text-gray-800">
+              {userProfile.firstName} {userProfile.lastName}
+            </p>
           </div>
           <div className="flex gap-3 items-center">
             <strong className="text-gray-600">Email:</strong>
@@ -66,7 +68,9 @@ const Profile = () => {
           </div>
           <div className="flex gap-3 items-center">
             <strong className="text-gray-600">Created At:</strong>
-            <p className="text-gray-800">{new Date(userProfile.createdAt).toDateString()}</p>
+            <p className="text-gray-800">
+              {new Date(userProfile.createdAt).toDateString()}
+            </p>
           </div>
           <div className="flex gap-3 items-center">
             <strong className="text-gray-600">Contact:</strong>

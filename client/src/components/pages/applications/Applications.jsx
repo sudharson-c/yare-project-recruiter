@@ -15,7 +15,7 @@ const Applications = () => {
     const fetchApplications = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/projects/project-application/${id}`
+          `${process.env.API_URL}/projects/project-application/${id}`
         );
         setApplications(response.data.projectApplications);
         setProject(response.data.projectDetails);
@@ -40,7 +40,7 @@ const Applications = () => {
   const handleAccept = async (applier) => {
     try {
       const response = await axios.put(
-        `http://localhost:5000/projects/project-application/accept/${id}`,
+        `${process.env.API_URL}/projects/project-application/accept/${id}`,
         { applierId: applier }
       );
       setApplications((prevApplications) =>
@@ -59,7 +59,7 @@ const Applications = () => {
   const handleReject = async (applier) => {
     try {
       const response = await axios.put(
-        `http://localhost:5000/projects/project-application/reject/${id}`,
+        `${process.env.API_URL}/projects/project-application/reject/${id}`,
         { applierId: applier }
       );
       setApplications((prevApplications) =>

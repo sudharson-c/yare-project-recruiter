@@ -19,13 +19,12 @@ const EditModal = ({ project, close }) => {
     e.preventDefault();
     try {
       await axios.put(
-        `http://localhost:5000/projects/${project.id}`,
+        `${process.env.API_URL}/projects/${project.id}`,
         projectDetails
       );
       window.alert("Project updated successfully");
       close();
       navigate(0);
-
     } catch (error) {
       console.error("Error updating project:", error);
       window.alert("Failed to update the project. Please try again.");

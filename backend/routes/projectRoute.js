@@ -1,8 +1,8 @@
-const { Router, application } = require('express');
+const { Router } = require('express');
 const router = Router();
-const dbx  = require("../config/dropbox")
+const dbx = require("../config/dropbox")
 const { projectDb, userDb } = require('../config/firebase'); // Ensure correct imports
-const {firestore} = require('firebase-admin');
+const { firestore } = require('firebase-admin');
 const Application = require("../models/Application")
 
 const connectDB = require("../config/db")
@@ -10,7 +10,7 @@ connectDB()
 // Get all Projects
 router.get('/', async (req, res) => {
   try {
-    const projects = (await projectDb.get()).docs.map((doc)=>({id:doc.id,...doc.data()}))
+    const projects = (await projectDb.get()).docs.map((doc) => ({ id: doc.id, ...doc.data() }))
     res.status(200).json({ projectData: projects });
   } catch (error) {
     res.status(500).send(error.message);
@@ -125,12 +125,12 @@ router.get('/:id', async (req, res) => {
       currProject.collaborators.map(async (person) => {
         const userDoc = await userDb.doc(person).get();
         const userData = userDoc.exists ? userDoc.data() : null;
-        return userData ? { userId: person, userName: `${userData.firstName} ${userData.lastName}` ,userAvatar : userData.avatar} : null;
+        return userData ? { userId: person, userName: `${userData.firstName} ${userData.lastName}`, userAvatar: userData.avatar } : null;
       })
     );
-    const applicationExist = await Application.find({projectId:currProject.id})
+    const applicationExist = await Application.find({ projectId: currProject.id })
     if (applicationExist)
-        currProject = {...currProject,application:applicationExist}
+      currProject = { ...currProject, application: applicationExist }
     res.status(200).json(currProject);
   } catch (error) {
     console.log(error)
@@ -150,7 +150,7 @@ router.get("/applications/:id", async (req, res) => {
       })
     );
     // Return both user applications and project details
-    // console.log({userApplications,projectApplied})
+    console.log({ userApplications, projectApplied })
     res.status(200).json({
       userApplications,
       projectsAppliedTo: projectApplied.filter((project) => project !== null), // Filter out any null projects
@@ -182,7 +182,7 @@ router.get("/project-application/:id", async (req, res) => {
   }
 });
 
-router.post('/apply',async (req,res)=>{
+router.post('/apply', async (req, res) => {
   try {
     const application = req.body;
     const existingApplication = await Application.findOne({
@@ -203,7 +203,7 @@ router.post('/apply',async (req,res)=>{
     console.error(error);
     res.status(500).send(error.message);
   }
-  
+
 })
 
 // Update Project By ID
@@ -246,12 +246,12 @@ router.delete('/:id', async (req, res) => {
     await ownerRef.update({
       projectIds: firestore.FieldValue.arrayRemove(req.params.id)
     });
-    await Application.deleteMany({projectId:req.params.id})
-    await projectData.collaborators.map(async collab=>{
-        const collabRef = await userDb.doc(collab);
-        collabRef.update({
-          projectIds: firestore.FieldValue.arrayRemove(req.params.id)
-        })
+    await Application.deleteMany({ projectId: req.params.id })
+    await projectData.collaborators.map(async collab => {
+      const collabRef = await userDb.doc(collab);
+      collabRef.update({
+        projectIds: firestore.FieldValue.arrayRemove(req.params.id)
+      })
     })
     await projectRef.delete();
     res.status(200).json({ message: 'Project deleted' });
@@ -311,7 +311,7 @@ router.put("/project-application/reject/:id", async (req, res) => {
     // Fetch project document
     const projectSnapshot = await projectDb.doc(projectId).get();
     const projectDoc = projectSnapshot.exists ? projectSnapshot.data() : null;
-    
+
     if (!projectDoc) {
       return res.status(404).send("Project not found");
     }
@@ -349,8 +349,8 @@ router.delete("/collaborators/:id", async (req, res) => {
     const updatedCollaborators = projectDoc.collaborators.filter(
       (collab) => collab !== collaboratorId
     );
-    const newNeed = projectDoc.members_needed +1;
-    await projectRef.update({ members_needed: newNeed,collaborators: updatedCollaborators });
+    const newNeed = projectDoc.members_needed + 1;
+    await projectRef.update({ members_needed: newNeed, collaborators: updatedCollaborators });
 
     // Step 2: Update collaborator's document to remove projectId from their project list
     const collaboratorRef = userDb.doc(collaboratorId);
