@@ -1,7 +1,7 @@
 // eslint-disable-next-line no-unused-vars
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import axios from "axios";
 
 const Applications = () => {
   const { id } = useParams();
@@ -14,7 +14,9 @@ const Applications = () => {
   useEffect(() => {
     const fetchApplications = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/projects/project-application/${id}`);
+        const response = await axios.get(
+          `http://localhost:5000/projects/project-application/${id}`
+        );
         setApplications(response.data.projectApplications);
         setProject(response.data.projectDetails);
         setLoading(false);
@@ -37,13 +39,18 @@ const Applications = () => {
 
   const handleAccept = async (applier) => {
     try {
-      const response = await axios.put(`http://localhost:5000/projects/project-application/accept/${id}`, { applierId: applier });
+      const response = await axios.put(
+        `http://localhost:5000/projects/project-application/accept/${id}`,
+        { applierId: applier }
+      );
       setApplications((prevApplications) =>
         prevApplications.map((application) =>
-          application.applier === applier ? { ...application, status: "ACCEPTED" } : application
+          application.applier === applier
+            ? { ...application, status: "ACCEPTED" }
+            : application
         )
       );
-      window.alert(response.data)
+      window.alert(response.data);
     } catch (error) {
       console.error("Error accepting application:", error.message);
     }
@@ -51,13 +58,18 @@ const Applications = () => {
 
   const handleReject = async (applier) => {
     try {
-      const response = await axios.put(`http://localhost:5000/projects/project-application/reject/${id}`, { applierId: applier });
+      const response = await axios.put(
+        `http://localhost:5000/projects/project-application/reject/${id}`,
+        { applierId: applier }
+      );
       setApplications((prevApplications) =>
         prevApplications.map((application) =>
-          application.applier === applier ? { ...application, status: "REJECTED" } : application
+          application.applier === applier
+            ? { ...application, status: "REJECTED" }
+            : application
         )
       );
-      window.alert(response.data)
+      window.alert(response.data);
     } catch (error) {
       console.error("Error rejecting application:", error.message);
     }
@@ -80,15 +92,43 @@ const Applications = () => {
       {applications.length > 0 ? (
         <ul className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {applications.map((application) => (
-            <li key={application._id} className="border p-6 rounded-lg shadow-md bg-white flex flex-col justify-between">
+            <li
+              key={application._id}
+              className="border p-6 rounded-lg shadow-md bg-white flex flex-col justify-between"
+            >
               <div className="mb-4">
-                <p><strong>Applier Name:</strong> {application.userDetails.firstName} {application.userDetails.lastName}</p>
-                <p><strong>Email:</strong> {application.userDetails.email}</p>
-                <p><strong>Phone:</strong> {application.userDetails.phone || "Not available"}</p>
-                <p><strong>Status:</strong> {application.status}</p>
-                <p><strong>Message:</strong> {application.message}</p>
-                <p><strong>Applied At:</strong> {new Date(application.appliedAt).toLocaleDateString()}</p>
-                <p><strong>Resume Link:</strong><a href={application.resume} className="hover:text-blue-500" target="_blank">{application.resume}</a></p>
+                <p>
+                  <strong>Applier Name:</strong>{" "}
+                  {application.userDetails.firstName}{" "}
+                  {application.userDetails.lastName}
+                </p>
+                <p>
+                  <strong>Email:</strong> {application.userDetails.email}
+                </p>
+                <p>
+                  <strong>Phone:</strong>{" "}
+                  {application.userDetails.phone || "Not available"}
+                </p>
+                <p>
+                  <strong>Status:</strong> {application.status}
+                </p>
+                <p>
+                  <strong>Message:</strong> {application.message}
+                </p>
+                <p>
+                  <strong>Applied At:</strong>{" "}
+                  {new Date(application.appliedAt).toLocaleDateString()}
+                </p>
+                <p>
+                  <strong>Resume Link:</strong>
+                  <a
+                    href={application.resume}
+                    className="hover:text-blue-500"
+                    target="_blank"
+                  >
+                    {application.resume}
+                  </a>
+                </p>
               </div>
               <div className="flex flex-col gap-3">
                 <button
@@ -113,18 +153,26 @@ const Applications = () => {
                     </button>
                   </>
                 ) : application.status === "ACCEPTED" ? (
-                  <p className="text-lime-600 font-semibold text-center">ACCEPTED</p>
+                  <p className="text-lime-600 font-semibold text-center">
+                    ACCEPTED
+                  </p>
                 ) : application.status === "REJECTED" ? (
-                  <p className="text-red-600 font-semibold text-center">REJECTED</p>
+                  <p className="text-red-600 font-semibold text-center">
+                    REJECTED
+                  </p>
                 ) : (
-                  <p className="text-gray-500 text-center">PROJECT FILLED RECRUITMENT</p>
+                  <p className="text-gray-500 text-center">
+                    PROJECT FILLED RECRUITMENT
+                  </p>
                 )}
               </div>
             </li>
           ))}
         </ul>
       ) : (
-        <p className="text-center text-gray-500">No applications found for this project.</p>
+        <p className="text-center text-gray-500">
+          No applications found for this project.
+        </p>
       )}
     </div>
   );

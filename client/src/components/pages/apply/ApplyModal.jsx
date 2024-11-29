@@ -12,19 +12,21 @@ const ApplyModal = ({ project, close }) => {
     applier: currentUser.id,
     owner: project.owner.clerkId,
     message: userMessage,
-    resume : userLink
+    resume: userLink,
   });
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const finalData = { ...formData, message: userMessage,resume : userLink };
-      const response = await axios.post("http://localhost:5000/projects/apply", finalData);
+      const finalData = { ...formData, message: userMessage, resume: userLink };
+      const response = await axios.post(
+        "http://localhost:5000/projects/apply",
+        finalData
+      );
       window.alert(response.data.message);
       close();
       navigate("/projects");
-      
     } catch (error) {
       console.error("Error applying to project:", error);
       window.alert("Failed to apply to project. Please try again.");
@@ -35,10 +37,10 @@ const ApplyModal = ({ project, close }) => {
     setMsg(e.target.value);
     setFormData((prevData) => ({ ...prevData, message: e.target.value }));
   };
-  const handleLink =(e)=>{
+  const handleLink = (e) => {
     setLink(e.target.value);
-    setFormData((prevData)=>({ ...prevData, resume : userLink}))
-  }
+    setFormData((prevData) => ({ ...prevData, resume: userLink }));
+  };
   return (
     <div
       id="crud-modal"
@@ -117,17 +119,17 @@ const ApplyModal = ({ project, close }) => {
                 />
               </div>
             </div>
-              <div className="flex gap-5 justify-evenly">
+            <div className="flex gap-5 justify-evenly">
               <button
                 type="submit"
                 className="text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                >
+              >
                 Apply
               </button>
               <button
                 onClick={close}
                 className="text-white inline-flex items-center border border-red-500 text-red-600 hover:bg-red-600 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                >
+              >
                 Cancel
               </button>
             </div>

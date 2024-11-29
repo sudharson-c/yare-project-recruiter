@@ -3,7 +3,7 @@ import Loading from "../../sub/Loading";
 import { useNavigate } from "react-router-dom";
 
 const ApplicationCard = (applicationDetail) => {
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
   const navigate = useNavigate();
   const handleViewProject = (projectId)=>{
     navigate(`/projects/${projectId}`)

@@ -19,11 +19,16 @@ const ProjectDetails = () => {
   useEffect(() => {
     const fetchProject = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/projects/${project_id}`);
+        const response = await axios.get(
+          `http://localhost:5000/projects/${project_id}`
+        );
         const projectData = response.data;
-        const filteredApplications = projectData.application && currentUser
-          ? projectData.application.filter(application => application.applier === currentUser.id)
-          : [];
+        const filteredApplications =
+          projectData.application && currentUser
+            ? projectData.application.filter(
+                (application) => application.applier === currentUser.id
+              )
+            : [];
         setProject({
           ...projectData,
           application: filteredApplications[0] || null,
@@ -62,7 +67,10 @@ const ProjectDetails = () => {
 
   const handleViewApplications = () => {
     navigate(`/projects/${project_id}/applications`, {
-      state: { applications: project.application, projectName: project.project_name },
+      state: {
+        applications: project.application,
+        projectName: project.project_name,
+      },
     });
   };
 
@@ -79,17 +87,34 @@ const ProjectDetails = () => {
       </div>
     );
   }
-  const handleRemoveCollab = (collaboratorId)=>{
-      axios.delete(`http://localhost:5000/projects/collaborators/${collaboratorId}`);
-      setProject({...project,collaborators: project.collaborators.filter(collaborator => collaborator.id !== collaboratorId)});
-  }
+  const handleRemoveCollab = (collaboratorId) => {
+    axios.delete(
+      `http://localhost:5000/projects/collaborators/${collaboratorId}`
+    );
+    setProject({
+      ...project,
+      collaborators: project.collaborators.filter(
+        (collaborator) => collaborator.id !== collaboratorId
+      ),
+    });
+  };
 
   return (
     <div className="container mx-auto p-6">
-      {applyModalOpen && <ApplyModal project={project} close={handleModalClose} />}
-      {editModalOpen && <EditModal project={project} close={handleModalClose} />}
-      {deleteModalOpen && <DeleteModal project={project} close={handleModalClose} onDelete={handleDeleteProject} />}
-      
+      {applyModalOpen && (
+        <ApplyModal project={project} close={handleModalClose} />
+      )}
+      {editModalOpen && (
+        <EditModal project={project} close={handleModalClose} />
+      )}
+      {deleteModalOpen && (
+        <DeleteModal
+          project={project}
+          close={handleModalClose}
+          onDelete={handleDeleteProject}
+        />
+      )}
+
       <div className="flex justify-start mb-6">
         <button
           className="border border-fuchsia-500 rounded-md px-4 py-2 hover:bg-fuchsia-500 hover:text-white transition"
@@ -100,7 +125,9 @@ const ProjectDetails = () => {
       </div>
 
       <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-lg p-8">
-        <h2 className="text-3xl font-bold text-center text-fuchsia-600 mb-6">{project.project_name}</h2>
+        <h2 className="text-3xl font-bold text-center text-fuchsia-600 mb-6">
+          {project.project_name}
+        </h2>
         <p className="text-gray-600 text-center mb-6">{project.project_desc}</p>
 
         <div className="flex flex-col items-center space-y-4">
@@ -115,28 +142,51 @@ const ProjectDetails = () => {
               View Project
             </a>
           </p>
-          <p><strong>Owner:</strong> {project.owner.firstName} {project.owner.lastName}</p>
-          <p><strong>Status:</strong> {project.status}</p>
-          <p><strong>Stipend:</strong> Rs {project.stipend}</p>
-          <p><strong>Benefits:</strong> {project.benefits}</p>
-          <p><strong>Members Needed:</strong> {project.members_needed}</p>
+          <p>
+            <strong>Owner:</strong> {project.owner.firstName}{" "}
+            {project.owner.lastName}
+          </p>
+          <p>
+            <strong>Status:</strong> {project.status}
+          </p>
+          <p>
+            <strong>Stipend:</strong> Rs {project.stipend}
+          </p>
+          <p>
+            <strong>Benefits:</strong> {project.benefits}
+          </p>
+          <p>
+            <strong>Members Needed:</strong> {project.members_needed}
+          </p>
         </div>
-          <ul>
-            <strong className="text-center px-3 flex justify-center pt-2">Collaborators:</strong><br />
-            <div className="flex flex-col gap-2 justify-center mt-2 mx-auto">
+        <ul>
+          <strong className="text-center px-3 flex justify-center pt-2">
+            Collaborators:
+          </strong>
+          <br />
+          <div className="flex flex-col gap-2 justify-center mt-2 mx-auto">
             {project.collaborators.map((person, index) => (
-              <li key={index} className="flex items-center justify-around gap-2">
+              <li
+                key={index}
+                className="flex items-center justify-around gap-2"
+              >
                 <ProfileButton person={person} />
                 <div>
-                  <button className="btn border border-red-500 p-2 rounded-lg hover:bg-rose-500 hover:text-white" onClick={()=>handleRemoveCollab(person)}>Remove</button>
+                  <button
+                    className="btn border border-red-500 p-2 rounded-lg hover:bg-rose-500 hover:text-white"
+                    onClick={() => handleRemoveCollab(person)}
+                  >
+                    Remove
+                  </button>
                 </div>
               </li>
             ))}
-            </div>
-          </ul>
+          </div>
+        </ul>
 
         <div className="flex justify-center mt-6 gap-4">
-          {currentUser.primaryEmailAddress.emailAddress === project.owner.email ? (
+          {currentUser.primaryEmailAddress.emailAddress ===
+          project.owner.email ? (
             <>
               <button
                 className="border border-fuchsia-500 rounded-md px-4 py-2 hover:bg-fuchsia-500 hover:text-white transition"
@@ -169,17 +219,16 @@ const ProjectDetails = () => {
             >
               {project.application.status}
             </strong>
-          ) : project.members_needed >0? 
-            (
+          ) : project.members_needed > 0 ? (
             <button
               className="border border-fuchsia-500 rounded-md px-4 py-2 hover:bg-fuchsia-500 hover:text-white transition"
               onClick={handleApply}
             >
               Apply
             </button>
-          ): 
-           <p className="text-xl text-center">Recruitment filled!</p>
-          }
+          ) : (
+            <p className="text-xl text-center">Recruitment filled!</p>
+          )}
         </div>
       </div>
     </div>
