@@ -15,14 +15,17 @@ const SignUpPage = () => {
   useEffect(() => {
     if (isSignedIn && user) {
       login(user);
-      navigate("/projects", { replace: true });
+      navigate("/get-more-details");
     }
   }, [isSignedIn, user]);
 
   return (
     <div className="w-full flex justify-center">
       {isLoaded ? (
-        <SignUp afterSignOutUrl={"/"} afterSignUpUrl={"/get-more-details"} />
+        <SignUp
+          afterSignOutUrl={"/"}
+          fallbackRedirectUrl={"/get-more-details"}
+        />
       ) : (
         <Loading />
       )}

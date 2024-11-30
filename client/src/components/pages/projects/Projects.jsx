@@ -13,9 +13,8 @@ const Projects = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log(process.env.API_URL);
     axios
-      .get(`http://localhost:5000/projects`)
+      .get(`${process.env.API_URL}/projects`)
       .then((response) => {
         setProjects(response.data.projectData);
         setLoading(false);
@@ -44,7 +43,7 @@ const Projects = () => {
               {projects.map((project, index) => (
                 <ProjectCard
                   key={index}
-                  id={project.id}
+                  id={project._id}
                   project_name={project.project_name}
                   project_desc={project.project_desc}
                   project_link={project.project_link}

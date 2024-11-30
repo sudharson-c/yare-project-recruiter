@@ -1,10 +1,18 @@
-import React, { useState, useContext } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { UserButton } from '@clerk/clerk-react';
-import { UserContext } from '../../../context/UserContext';
+import React, { useState, useContext } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { SignOutButton } from "@clerk/clerk-react";
+import { UserContext } from "../../../context/UserContext";
+import ProfileButton from "../pages/profile/ProfileButton";
 
 const Navbar = () => {
   const { currentUser } = useContext(UserContext);
+  const person = currentUser
+    ? {
+        userId: currentUser.id,
+        userAvatar: currentUser.imageUrl,
+        userName: currentUser.firstName + currentUser.lastName,
+      }
+    : null;
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -51,8 +59,9 @@ const Navbar = () => {
           >
             Add your Project
           </button>
-          <UserButton />
-          <p>{currentUser.fullName}</p>
+          {/* <UserButton /> */}
+          <ProfileButton person={person} />
+          <SignOutButton />
         </div>
       )}
     </div>
@@ -60,29 +69,29 @@ const Navbar = () => {
 
   return (
     <>
-    <nav className="relative flex items-center justify-between p-5 bg-white shadow-sm">
-      {/* Logo Section */}
-      <Logo />
+      <nav className="relative flex items-center justify-between p-5 bg-white shadow-sm">
+        {/* Logo Section */}
+        <Logo />
 
-      {/* Hamburger Icon for mobile */}
-      <button
-        onClick={toggleMenu}
-        className="block sm:hidden focus:outline-none"
-        aria-label="Toggle menu"
+        {/* Hamburger Icon for mobile */}
+        <button
+          onClick={toggleMenu}
+          className="block sm:hidden focus:outline-none"
+          aria-label="Toggle menu"
         >
-        <div className="w-6 h-6 flex flex-col justify-between">
-          <span className="block h-1 bg-fuchsia-600"></span>
-          <span className="block h-1 bg-fuchsia-600"></span>
-          <span className="block h-1 bg-fuchsia-600"></span>
-        </div>
-      </button>
+          <div className="w-6 h-6 flex flex-col justify-between">
+            <span className="block h-1 bg-fuchsia-600"></span>
+            <span className="block h-1 bg-fuchsia-600"></span>
+            <span className="block h-1 bg-fuchsia-600"></span>
+          </div>
+        </button>
 
-      {/* Desktop Menu */}
-      <div className="hidden sm:flex items-center">
-        <Buttons />
-      </div>
-    </nav>
-    {isMenuOpen && (
+        {/* Desktop Menu */}
+        <div className="hidden sm:flex items-center">
+          <Buttons />
+        </div>
+      </nav>
+      {isMenuOpen && (
         <div className="top-full left-0 w-full bg-white shadow-md sm:block p-5 md:hidden">
           <br />
           <Buttons />

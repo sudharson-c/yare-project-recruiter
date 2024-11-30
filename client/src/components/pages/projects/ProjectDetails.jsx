@@ -20,7 +20,7 @@ const ProjectDetails = () => {
     const fetchProject = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/projects/${project_id}`
+          `${process.env.API_URL}/projects/${project_id}`
         );
         const projectData = response.data;
         const filteredApplications =

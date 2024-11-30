@@ -16,11 +16,10 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchUserProjects = async () => {
-      console.log(process.env.API_URL);
       if (currentUser) {
         try {
           const projectsResponse = await axios.get(
-            `${import.meta.env.API_URL}/projects/user/${currentUser.id}`
+            `${process.env.API_URL}/projects/user/${currentUser.id}`
           );
           setUserProjects(projectsResponse.data.userProjects);
           const applicationsResponse = await axios.get(
