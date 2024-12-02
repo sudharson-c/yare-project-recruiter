@@ -1,6 +1,6 @@
 // UserContext.js
-import React, { createContext, useState, useEffect } from 'react';
-import { useUser } from '@clerk/clerk-react';
+import React, { createContext, useState, useEffect } from "react";
+import { useUser, useAuth } from "@clerk/clerk-react";
 
 const UserContext = createContext();
 
@@ -15,17 +15,18 @@ const UserProvider = ({ children }) => {
       setCurrentUser(null);
     }
   }, [isLoaded, isSignedIn, user]);
-  const login = (user)=>{
+  const login = (user) => {
     setCurrentUser(user);
-  }
-  const logout = ()=>{
+  };
+  const logout = () => {
+    useAuth().signOut;
     setCurrentUser(null);
-  }
+  };
   return (
-    <UserContext.Provider value={{ currentUser,login,logout }}>
+    <UserContext.Provider value={{ currentUser, login, logout }}>
       {children}
     </UserContext.Provider>
   );
 };
 
-export { UserContext, UserProvider};
+export { UserContext, UserProvider };

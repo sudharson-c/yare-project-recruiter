@@ -2,12 +2,14 @@ import React, { useContext, useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
 import { UserContext } from "../../../context/UserContext";
+import { useNavigate } from "react-router-dom";
 
 const EditModalProfile = ({ close }) => {
   const { currentUser } = useContext(UserContext);
   const [userDetails, setUserDetails] = useState({});
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -39,6 +41,8 @@ const EditModalProfile = ({ close }) => {
         `${process.env.API_URL}/users/${currentUser.id}`,
         userDetails
       );
+      alert("Successfully Updated!");
+      navigate(0);
       setSuccessMessage("User updated successfully!");
       close();
     } catch (error) {

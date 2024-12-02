@@ -89,13 +89,17 @@ const ProjectDetails = () => {
   }
   const handleRemoveCollab = (collaboratorId) => {
     axios.delete(
-      `${process.env.API_URL}/projects/collaborators/${collaboratorId}`
+      `${process.env.API_URL}/projects/collaborators/${collaboratorId}`,
+      {
+        data: { projectId: project_id },
+      }
     );
     setProject({
       ...project,
       collaborators: project.collaborators.filter(
         (collaborator) => collaborator.id !== collaboratorId
       ),
+      members_needed: project.members_needed + 1,
     });
   };
 
@@ -147,7 +151,10 @@ const ProjectDetails = () => {
             {project.owner.lastName}
           </p>
           <p>
-            <strong>Status:</strong> {project.project_status}
+            <strong>Status:</strong>{" "}
+            {project.project_status == "IN_PROGRESS"
+              ? "IN PROGRESS"
+              : project.project_status}
           </p>
           <p>
             <strong>Stipend:</strong> Rs {project.stipend}
@@ -171,6 +178,7 @@ const ProjectDetails = () => {
                   key={index}
                   className="flex items-center justify-around gap-2"
                 >
+                  {console.log(project.collaborators)}
                   <ProfileButton
                     person={{
                       userId: person.id,
@@ -178,14 +186,16 @@ const ProjectDetails = () => {
                       userName: person.firstName + person.lastName,
                     }}
                   />
-                  <div>
-                    <button
-                      className="btn border border-red-500 p-2 rounded-lg hover:bg-rose-500 hover:text-white"
-                      onClick={() => handleRemoveCollab(person)}
-                    >
-                      Remove
-                    </button>
-                  </div>
+                  {currentUser.id == project.ownerId && (
+                    <div>
+                      <button
+                        className="btn border border-red-500 p-2 rounded-lg hover:bg-rose-500 hover:text-white"
+                        onClick={() => handleRemoveCollab(person.id)}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  )}
                 </li>
               ))
             ) : (
@@ -227,9 +237,25 @@ const ProjectDetails = () => {
                   : "text-gray-600"
               }
             >
-              {project.application.status == "NEW"
-                ? "APPLIED"
-                : project.application.status}
+              {project.application.status == "NEW" ? (
+                "APPLIED"
+              ) : project.application.status == "REJECTED" ? (
+                project.members_needed > 0 ? (
+                  <div>
+                    <p>Application not accepted!</p>
+                    <button
+                      className="border border-fuchsia-500 rounded-md px-4 py-2 hover:bg-fuchsia-500 hover:text-white transition"
+                      onClick={handleApply}
+                    >
+                      Re-Apply
+                    </button>
+                  </div>
+                ) : (
+                  <p className="text-xl text-center">Recruitment filled!</p>
+                )
+              ) : (
+                project.application.status
+              )}
             </strong>
           ) : project.members_needed > 0 ? (
             <button

@@ -12,7 +12,7 @@ const Profile = () => {
   const [deleteProfile, setDeleteProfile] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { currentUser } = useContext(UserContext);
+  const { currentUser, logout } = useContext(UserContext);
 
   const handleEdit = () => seteditProfile(true);
   const handleDelete = () => setDeleteProfile(true);
@@ -22,6 +22,7 @@ const Profile = () => {
   };
   const deleteUser = async () => {
     await axios.delete(`${process.env.API_URL}/users/${id}`);
+    logout();
     navigate("/");
   };
 
@@ -109,15 +110,23 @@ const Profile = () => {
               label: "Created At",
               value: new Date(userProfile.createdAt).toDateString(),
             },
-            {
-              label: "Contact",
-              value: userProfile.phone || "Not Available",
-              valueClass: userProfile.phone ? "text-gray-800" : "text-red-500",
-            },
+            userProfile.resume_link
+              ? {
+                  label: "Contact",
+                  value: userProfile.phone || "Not Available",
+                  valueClass: userProfile.phone
+                    ? "text-gray-800"
+                    : "text-red-500",
+                }
+              : {},
           ].map(({ label, value, valueClass }, idx) => (
             <div key={idx} className="flex gap-3 items-center">
-              <strong className="text-gray-600">{label}:</strong>
-              <p className={valueClass || "text-gray-800"}>{value}</p>
+              {label && value && (
+                <>
+                  <strong className="text-gray-600">{label}:</strong>
+                  <p className={valueClass || "text-gray-800"}>{value}</p>
+                </>
+              )}
             </div>
           ))}
         </div>

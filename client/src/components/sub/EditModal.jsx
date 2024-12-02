@@ -23,8 +23,8 @@ const EditModal = ({ project, close }) => {
       description: projectDetails.description,
       ownerId: project.owner.id,
       project_status: projectDetails.project_status,
-      stipend: projectDetails.stipend,
-      members_needed: projectDetails.members_needed,
+      stipend: parseInt(projectDetails.stipend),
+      members_needed: parseInt(projectDetails.members_needed),
       benefits: projectDetails.benefits,
     };
     try {

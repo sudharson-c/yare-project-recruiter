@@ -78,7 +78,7 @@ router.post("/", async (req, res) => {
         project_link: newProject.project_link,
         project_status: newProject.status,
         benefits: newProject.benefits,
-        stipend: newProject.stipend,
+        stipend: parseInt(newProject.stipend),
         members_needed: parseInt(newProject.members_needed),
         createdAt: newProject.createdAt,
         updatedAt: newProject.updatedAt,
@@ -278,25 +278,13 @@ router.delete('/:id', async (req, res) => {
         id: req.params.id
       }
     })
-    await prisma.user.update({
-      where: {
-        id: deleteProject.owner.id
-      },
-      data: {
-        projects: {
-          disconnect: {
-            id: req.params.id
-          }
-        }
-      }
-    });
     await prisma.applications.deleteMany({
       where: {
         projectId: req.params.id
       }
     })
 
-    await deleteProject.collaborators.map(async collab => {
+    deleteProject.collaborators.map(async collab => {
       await prisma.user.update({
         where: {
           id: collab.id
@@ -341,6 +329,7 @@ router.put("/project-application/accept/:id", async (req, res) => {
         data: {
           members_needed: projectDoc.members_needed - 1,
           collaborators: { connect: { id: applierId } },
+
         },
       });
 
@@ -349,7 +338,18 @@ router.put("/project-application/accept/:id", async (req, res) => {
         where: { id: applicationDoc.id },
         data: { status: "ACCEPTED" },
       });
-
+      await prisma.user.update({
+        where: {
+          id: applierId,
+        },
+        data: {
+          projects: {
+            connect: {
+              id: projectId,
+            },
+          }
+        }
+      })
       return res.status(200).send("Application accepted");
     } else {
       await prisma.applications.update({
@@ -370,8 +370,8 @@ router.put("/project-application/reject/:id", async (req, res) => {
 
   try {
     // Fetch application document
-    const applicationDoc = await prisma.applications.findUnique({
-      where: { userId_projectId: { userId: applierId, projectId } },
+    const applicationDoc = await prisma.applications.findFirst({
+      where: { AND: [{ userId: applierId }, { projectId: projectId }] }
     });
     if (!applicationDoc) return res.status(404).send("Application not found");
 
@@ -389,8 +389,8 @@ router.put("/project-application/reject/:id", async (req, res) => {
 });
 
 router.delete("/collaborators/:id", async (req, res) => {
-  const { ownerId, collaboratorId } = req.body;
-  const projectId = req.params.id;
+  const { projectId } = req.body;
+  const collaboratorId = req.params.id;
 
   try {
     const projectDoc = await prisma.project.findUnique({

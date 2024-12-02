@@ -52,6 +52,7 @@ const Applications = () => {
         )
       );
       window.alert(response.data);
+      navigate(0);
     } catch (error) {
       console.error("Error accepting application:", error.message);
     }
@@ -71,6 +72,7 @@ const Applications = () => {
         )
       );
       window.alert(response.data);
+      navigate(0);
     } catch (error) {
       console.error("Error rejecting application:", error.message);
     }

@@ -31,6 +31,9 @@ const App = () => {
       <Router>
         <div className="min-h-screen">
           <Navbar />
+          <div className="w-full text-center text-gray-400 bg-gray-100">
+            This is a beta version✨
+          </div>
           <div className="pt-6">
             <Routes>
               <Route path="/login" element={<SignInPage />} />

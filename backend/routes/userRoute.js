@@ -1,7 +1,6 @@
 const { Router } = require("express");
 const prisma = require("../config/prisma.js");
 const clerkClient = require("../config/clerk.js");
-
 const router = Router();
 
 // Get all users
@@ -97,20 +96,51 @@ router.put("/:id", async (req, res) => {
 
 // Delete user by ID
 router.delete("/:id", async (req, res) => {
-    console.log("Delete a user");
+    console.log("Delete a user " + req.params.id);
     try {
+        // Update projects: Remove user from collaborators and increment members_needed
+        const projects = await prisma.project.findMany({
+            where: {
+                collaborators: {
+                    some: {
+                        id: req.params.id,
+                    },
+                },
+            },
+        });
+
+        for (const project of projects) {
+            await prisma.project.update({
+                where: { id: project.id },
+                data: {
+                    collaborators: {
+                        disconnect: { id: req.params.id }, // Disconnect user from project collaborators
+                    },
+                    members_needed: { increment: 1 }, // Increment members_needed
+                },
+            });
+        }
+        await prisma.applications.deleteMany({
+            where: {
+                userId: req.params.id,
+            }
+        })
+        // Delete the user from the database
         const deletedUser = await prisma.user.delete({
             where: {
                 id: req.params.id,
             },
         });
+
+        // Delete the user from Clerk
         await clerkClient.users.deleteUser(req.params.id);
         res.status(200).json(deletedUser);
     } catch (error) {
-        if (error.code === "P2025") {
-            return res.status(404).json({ message: "User not found" });
-        }
-        res.status(error.status).json({ code: error.code, message: error.message });
+        console.error("Error deleting user:", error);
+        res.status(500).json({
+            code: error.code || "INTERNAL_SERVER_ERROR",
+            message: error.message || "An error occurred while deleting the user.",
+        });
     }
 });
 
