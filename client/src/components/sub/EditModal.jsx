@@ -25,7 +25,7 @@ const EditModal = ({ project, close }) => {
       project_status: projectDetails.project_status,
       stipend: projectDetails.stipend,
       members_needed: projectDetails.members_needed,
-      benefits: projectDetails.members_needed,
+      benefits: projectDetails.benefits,
     };
     try {
       await axios.put(
