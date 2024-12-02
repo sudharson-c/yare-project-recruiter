@@ -6,7 +6,13 @@ const projectRouter = require('./routes/projectRoute')
 const userRouter = require('./routes/userRoute');
 
 // Middleware Connections
-app.use(cors())
+app.use(cors(
+    {
+        origin: ['https://yare-sudharson-cs-projects.vercel.app/'],
+        methods: ['GET', 'POST'],
+        credentials: true
+    }
+))
 app.use(express.json())
 
 // Routes
