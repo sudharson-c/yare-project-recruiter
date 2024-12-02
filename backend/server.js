@@ -9,7 +9,7 @@ const userRouter = require('./routes/userRoute');
 app.use(cors(
     {
         origin: ['https://yare-sudharson-cs-projects.vercel.app/'],
-        methods: ['GET', 'POST'],
+        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
         credentials: true
     }
 ))
