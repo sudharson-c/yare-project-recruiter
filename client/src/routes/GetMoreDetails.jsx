@@ -64,6 +64,7 @@ const GetMoreDetails = () => {
           placeholder="Enter your role..."
           className="w-full p-3 rounded-md border border-gray-400"
           onChange={(e) => setRole(e.target.value)}
+          required
         />
         <center>
           <button

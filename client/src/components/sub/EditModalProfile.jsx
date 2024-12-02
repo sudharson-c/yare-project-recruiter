@@ -37,6 +37,7 @@ const EditModalProfile = ({ close }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      userDetails.updatedAt = new Date().toISOString();
       await axios.put(
         `${process.env.API_URL}/users/${currentUser.id}`,
         userDetails
