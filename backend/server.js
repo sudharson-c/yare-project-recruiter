@@ -6,14 +6,11 @@ const projectRouter = require('./routes/projectRoute')
 const userRouter = require('./routes/userRoute');
 
 // Middleware Connections
-app.use(cors(
-    {
-        origin: '*',
-        // ['https://yare-sudharson-cs-projects.vercel.app', 'https://yare-rho.vercel.app', 'http://localhost:5173'],
-        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-        credentials: true
-    }
-))
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
+}));
+
 app.use(express.json())
 
 app.get("/", (req, res) => {
@@ -23,7 +20,6 @@ app.get("/", (req, res) => {
 app.use('/users', userRouter)
 app.use('/projects', projectRouter);
 
-app.get("/",)
 // Connection
 const PORT = process.env.PORT || 5000
 app.listen(PORT, () => {
