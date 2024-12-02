@@ -235,26 +235,21 @@ router.post('/apply', async (req, res) => {
 
 // Update Project By ID
 router.put('/:id', async (req, res) => {
-  const { name, description, project_link, owner, collaborators, project_status, stipend, benefits, members_needed, createdAt } = req.body;
+  const { name, description, project_link, ownerId, collaborators, project_status, stipend, benefits, members_needed, createdAt } = req.body;
   try {
     const updatedProject = await prisma.project.update({
       where: {
         id: req.params.id
       },
       data: {
-        name: name,
-        description: description,
+        name,
+        description,
         project_link,
-        ownerId: owner.id,
-        collaborators_id: {
-          set: collaborators
-        },
-        project_status: project_status,
-        stipend: stipend,
-        members_needed: members_needed,
-        benefits: benefits,
-        createdAt: createdAt,
-        updatedAt: new Date().toISOString()
+        ownerId,
+        project_status,
+        stipend,
+        members_needed,
+        benefits,
       }
     })
 

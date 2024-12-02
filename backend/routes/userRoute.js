@@ -72,6 +72,7 @@ router.get("/:id", async (req, res) => {
 // Update user by ID
 router.put("/:id", async (req, res) => {
     console.log("Update a user");
+    console.log(req.body)
     try {
         const updatedUser = await prisma.user.update({
             where: {
