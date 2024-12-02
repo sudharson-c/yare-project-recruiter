@@ -5,8 +5,7 @@
   "type": "commonjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon server.js",
-    "postinstall": "npx prisma generate && next build"
+    "start": "nodemon server.js"
   },
   "keywords": [],
   "author": "",
