@@ -8,13 +8,16 @@ const userRouter = require('./routes/userRoute');
 // Middleware Connections
 app.use(cors(
     {
-        origin: ['https://yare-sudharson-cs-projects.vercel.app/', 'https://yare-rho.vercel.app/', 'http://localhost:5173'],
+        origin: ['https://yare-sudharson-cs-projects.vercel.app', 'https://yare-rho.vercel.app', 'http://localhost:5173'],
         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
         credentials: true
     }
 ))
 app.use(express.json())
 
+app.get("/", (req, res) => {
+    res.send("Server is running");
+});
 // Routes
 app.use('/users', userRouter)
 app.use('/projects', projectRouter);
