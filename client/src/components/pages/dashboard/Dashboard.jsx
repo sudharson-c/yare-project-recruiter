@@ -21,7 +21,6 @@ const Dashboard = () => {
           const projectsResponse = await axios.get(
             `${process.env.API_URL}/projects/user/${currentUser.id}`
           );
-          setUserProjects(projectsResponse.data.userProjects);
           const applicationsResponse = await axios.get(
             `${process.env.API_URL}/projects/applications/${currentUser.id}`
           );
@@ -31,7 +30,7 @@ const Dashboard = () => {
           const userApplicationsWithProject = userApplications.map(
             (application) => {
               const project = projectsAppliedTo.find(
-                (proj) => proj.id === application.project
+                (proj) => proj.id === application.projectId
               );
               return { ...application, project };
             }
@@ -53,7 +52,7 @@ const Dashboard = () => {
 
   const renderProjects = (status) => {
     const filteredProjects = userProjects.filter(
-      (project) => project.status === status
+      (project) => project.project_status == status
     );
     if (filteredProjects.length === 0)
       return (
@@ -62,14 +61,14 @@ const Dashboard = () => {
         </p>
       );
 
-    return filteredProjects.map((project) => (
+    return filteredProjects.map((project, index) => (
       <ProjectCard
-        key={project.id}
+        key={index}
         id={project.id}
-        project_name={project.project_name}
-        project_desc={project.project_desc}
+        project_name={project.name}
+        project_desc={project.description}
         owner={project.owner}
-        status={project.status}
+        status={project.project_status}
         createdAt={project.createdAt}
       />
     ));
@@ -86,6 +85,7 @@ const Dashboard = () => {
         </p>
       );
     }
+    console.log(userApplications);
     return userApplications.map((application, index) => (
       <div key={index} className="pt-4 flex justify-center">
         <ApplicationCard application={application} />
@@ -127,7 +127,7 @@ const Dashboard = () => {
                   In Progress
                 </h3>
                 <div className="flex flex-wrap justify-center gap-6">
-                  {renderProjects("IN PROGRESS")}
+                  {renderProjects("IN_PROGRESS")}
                 </div>
               </section>
 

@@ -17,6 +17,7 @@ const Applications = () => {
         const response = await axios.get(
           `${process.env.API_URL}/projects/project-application/${id}`
         );
+        console.log(response.data);
         setApplications(response.data.projectApplications);
         setProject(response.data.projectDetails);
         setLoading(false);
@@ -87,13 +88,13 @@ const Applications = () => {
         Back
       </button>
       <h2 className="text-center text-3xl font-extrabold mb-8">
-        Applications for Project {project.project_name}
+        Applications for Project {project.name}
       </h2>
       {applications.length > 0 ? (
         <ul className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {applications.map((application) => (
             <li
-              key={application._id}
+              key={application.id}
               className="border p-6 rounded-lg shadow-md bg-white flex flex-col justify-between"
             >
               <div className="mb-4">
@@ -117,37 +118,37 @@ const Applications = () => {
                 </p>
                 <p>
                   <strong>Applied At:</strong>{" "}
-                  {new Date(application.appliedAt).toLocaleDateString()}
+                  {new Date(application.createdAt).toLocaleDateString()}
                 </p>
                 <p>
                   <strong>Resume Link:</strong>
                   <a
-                    href={application.resume}
+                    href={application.resume_link}
                     className="hover:text-blue-500"
                     target="_blank"
                   >
-                    {application.resume}
+                    {application.resume_link}
                   </a>
                 </p>
               </div>
               <div className="flex flex-col gap-3">
                 <button
                   className="bg-indigo-500 text-white py-2 rounded-md hover:bg-indigo-600 transition-all"
-                  onClick={() => handleProfile(application.applier)}
+                  onClick={() => handleProfile(application.userId)}
                 >
                   View Profile
                 </button>
-                {application.status === "APPLIED" ? (
+                {application.status === "NEW" ? (
                   <>
                     <button
                       className="bg-lime-500 text-white py-2 rounded-md hover:bg-lime-600 transition-all"
-                      onClick={() => handleAccept(application.applier)}
+                      onClick={() => handleAccept(application.userId)}
                     >
                       Accept
                     </button>
                     <button
                       className="bg-red-500 text-white py-2 rounded-md hover:bg-red-600 transition-all"
-                      onClick={() => handleReject(application.applier)}
+                      onClick={() => handleReject(application.userId)}
                     >
                       Reject
                     </button>

@@ -26,7 +26,7 @@ const ProjectDetails = () => {
         const filteredApplications =
           projectData.application && currentUser
             ? projectData.application.filter(
-                (application) => application.applier === currentUser.id
+                (application) => application.userId === currentUser.id
               )
             : [];
         setProject({
@@ -69,7 +69,7 @@ const ProjectDetails = () => {
     navigate(`/projects/${project_id}/applications`, {
       state: {
         applications: project.application,
-        projectName: project.project_name,
+        projectName: project.name,
       },
     });
   };
@@ -126,9 +126,9 @@ const ProjectDetails = () => {
 
       <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-lg p-8">
         <h2 className="text-3xl font-bold text-center text-fuchsia-600 mb-6">
-          {project.project_name}
+          {project.name}
         </h2>
-        <p className="text-gray-600 text-center mb-6">{project.project_desc}</p>
+        <p className="text-gray-600 text-center mb-6">{project.description}</p>
 
         <div className="flex flex-col items-center space-y-4">
           <p>
@@ -147,7 +147,7 @@ const ProjectDetails = () => {
             {project.owner.lastName}
           </p>
           <p>
-            <strong>Status:</strong> {project.status}
+            <strong>Status:</strong> {project.project_status}
           </p>
           <p>
             <strong>Stipend:</strong> Rs {project.stipend}
@@ -165,22 +165,32 @@ const ProjectDetails = () => {
           </strong>
           <br />
           <div className="flex flex-col gap-2 justify-center mt-2 mx-auto">
-            {project.collaborators.map((person, index) => (
-              <li
-                key={index}
-                className="flex items-center justify-around gap-2"
-              >
-                <ProfileButton person={person} />
-                <div>
-                  <button
-                    className="btn border border-red-500 p-2 rounded-lg hover:bg-rose-500 hover:text-white"
-                    onClick={() => handleRemoveCollab(person)}
-                  >
-                    Remove
-                  </button>
-                </div>
-              </li>
-            ))}
+            {project.collaborators.length > 0 ? (
+              project.collaborators.map((person, index) => (
+                <li
+                  key={index}
+                  className="flex items-center justify-around gap-2"
+                >
+                  <ProfileButton
+                    person={{
+                      userId: person.id,
+                      userAvatar: person.avatar,
+                      userName: person.firstName + person.lastName,
+                    }}
+                  />
+                  <div>
+                    <button
+                      className="btn border border-red-500 p-2 rounded-lg hover:bg-rose-500 hover:text-white"
+                      onClick={() => handleRemoveCollab(person)}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </li>
+              ))
+            ) : (
+              <p className="text-center -mt-8">No collaborators yet</p>
+            )}
           </div>
         </ul>
 
@@ -217,7 +227,9 @@ const ProjectDetails = () => {
                   : "text-gray-600"
               }
             >
-              {project.application.status}
+              {project.application.status == "NEW"
+                ? "APPLIED"
+                : project.application.status}
             </strong>
           ) : project.members_needed > 0 ? (
             <button

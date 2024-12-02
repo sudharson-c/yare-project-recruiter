@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import EditModalProfile from "../../sub/EditModalProfile";
+import DeleteModalProfile from "../../sub/DeleteModalProfile";
+import { UserContext } from "../../../../context/UserContext";
 
 const Profile = () => {
   const { id } = useParams();
@@ -10,12 +12,17 @@ const Profile = () => {
   const [deleteProfile, setDeleteProfile] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { currentUser } = useContext(UserContext);
 
   const handleEdit = () => seteditProfile(true);
   const handleDelete = () => setDeleteProfile(true);
   const handleCancel = () => {
     seteditProfile(false);
     setDeleteProfile(false);
+  };
+  const deleteUser = async () => {
+    await axios.delete(`${process.env.API_URL}/users/${id}`);
+    navigate("/");
   };
 
   useEffect(() => {
@@ -75,6 +82,9 @@ const Profile = () => {
       </button>
       <div className="bg-white shadow-lg rounded-lg p-8 max-w-4xl w-full flex flex-col lg:flex-row gap-10 items-center lg:items-start">
         {editProfile && <EditModalProfile close={handleCancel} />}
+        {deleteProfile && (
+          <DeleteModalProfile close={handleCancel} onDelete={deleteUser} />
+        )}
         {userProfile.avatar ? (
           <img
             src={userProfile.avatar}
@@ -111,17 +121,22 @@ const Profile = () => {
             </div>
           ))}
         </div>
-        <div className="flex flex-col justify-between h-full space-y-4">
-          <button
-            className="py-2 px-6 bg-lime-500 text-white rounded-lg shadow hover:bg-lime-600 transition-all"
-            onClick={handleEdit}
-          >
-            Edit
-          </button>
-          <button className="py-2 px-6 bg-red-500 text-white rounded-lg shadow hover:bg-red-600 transition-all">
-            Delete
-          </button>
-        </div>
+        {currentUser.id == id && (
+          <div className="flex flex-col justify-between h-full space-y-4">
+            <button
+              className="py-2 px-6 bg-lime-500 text-white rounded-lg shadow hover:bg-lime-600 transition-all"
+              onClick={handleEdit}
+            >
+              Edit
+            </button>
+            <button
+              className="py-2 px-6 bg-red-500 text-white rounded-lg shadow hover:bg-red-600 transition-all"
+              onClick={handleDelete}
+            >
+              Delete
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

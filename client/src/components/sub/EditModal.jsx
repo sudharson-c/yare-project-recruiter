@@ -44,7 +44,7 @@ const EditModal = ({ project, close }) => {
         <div className="relative bg-white rounded-lg shadow dark:bg-gray-700">
           <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Edit {project.project_name}
+              Edit {project.name}
             </h3>
             <button
               type="button"
@@ -58,16 +58,16 @@ const EditModal = ({ project, close }) => {
             <div className="grid gap-4 mb-4 grid-cols-2">
               <div className="col-span-2">
                 <label
-                  htmlFor="project_name"
+                  htmlFor="name"
                   className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                 >
                   Project Name:
                 </label>
                 <input
                   type="text"
-                  name="project_name"
-                  id="project_name"
-                  value={projectDetails.project_name}
+                  name="name"
+                  id="name"
+                  value={projectDetails.name}
                   onChange={handleChange}
                   className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                   required
@@ -82,9 +82,9 @@ const EditModal = ({ project, close }) => {
                 </label>
                 <input
                   type="text"
-                  name="project_desc"
-                  id="project_desc"
-                  value={projectDetails.project_desc}
+                  name="description"
+                  id="description"
+                  value={projectDetails.description}
                   onChange={handleChange}
                   className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                   required
@@ -158,9 +158,9 @@ const EditModal = ({ project, close }) => {
                   value={projectDetails.status}
                   onChange={handleChange}
                 >
-                  <option>NEW</option>
-                  <option>IN PROGRESS</option>
-                  <option>COMPLETED</option>
+                  <option value={"NEW"}>NEW</option>
+                  <option value={"IN_PROGRESS"}>IN PROGRESS</option>
+                  <option value={"COMPLETED"}>COMPLETED</option>
                 </select>
               </div>
               <div className="col-span-2">

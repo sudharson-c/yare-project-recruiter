@@ -29,10 +29,9 @@ const GetMoreDetails = () => {
         firstName: user.firstName,
         lastName: user.lastName,
         avatar: user.imageUrl,
-        phone: user.primaryPhoneNumber,
         username: user.username,
         createdAt: new Date().toISOString(),
-        projectIds: [],
+        updatedAt: new Date().toISOString(),
         role: role,
       };
 

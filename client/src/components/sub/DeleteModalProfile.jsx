@@ -2,7 +2,7 @@
 import React from "react";
 
 // eslint-disable-next-line react/prop-types
-const DeleteModal = ({ project, close, onDelete }) => {
+const DeleteModalProfile = ({ close, onDelete }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-75">
       <div className="bg-white rounded-lg shadow dark:bg-gray-700">
@@ -45,4 +45,4 @@ const DeleteModal = ({ project, close, onDelete }) => {
   );
 };
 
-export default DeleteModal;
+export default DeleteModalProfile;

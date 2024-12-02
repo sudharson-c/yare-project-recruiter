@@ -171,7 +171,7 @@ const AddProject = () => {
                 required
               >
                 <option value="NEW">NEW</option>
-                <option value="IN PROGRESS">IN PROGRESS</option>
+                <option value="IN_PROGRESS">IN PROGRESS</option>
                 <option value="COMPLETED">COMPLETED</option>
               </select>
             </div>

@@ -43,13 +43,13 @@ const Projects = () => {
               {projects.map((project, index) => (
                 <ProjectCard
                   key={index}
-                  id={project._id}
-                  project_name={project.project_name}
-                  project_desc={project.project_desc}
+                  id={project.id}
+                  project_name={project.name}
+                  project_desc={project.description}
                   project_link={project.project_link}
                   owner={project.owner}
-                  collaborators={project.collaborators}
-                  status={project.status}
+                  collaborators={project.collaborators_id}
+                  status={project.project_status}
                   stipend={project.stipend}
                   benefits={project.benefits}
                   members_needed={project.members_needed}

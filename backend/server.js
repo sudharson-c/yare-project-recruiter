@@ -3,11 +3,7 @@ const app = express();
 const cors = require('cors');
 require('dotenv').config()
 const projectRouter = require('./routes/projectRoute')
-const userRouter = require('./routes/userRoute')
-
-// Mongo DB Connections
-const connection = require("./config/db")
-connection();
+const userRouter = require('./routes/userRoute');
 
 // Middleware Connections
 app.use(cors())

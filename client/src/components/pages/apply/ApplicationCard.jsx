@@ -5,10 +5,12 @@ import { useNavigate } from "react-router-dom";
 const ApplicationCard = (applicationDetail) => {
   const [loading] = useState(false);
   const navigate = useNavigate();
-  const handleViewProject = (projectId)=>{
-    navigate(`/projects/${projectId}`)
-  }
-  const application = applicationDetail.application;
+  const handleViewProject = (projectId) => {
+    navigate(`/projects/${projectId}`);
+  };
+  let application = applicationDetail.application;
+  // application.project = applicationDetail.
+
   return (
     <>
       {loading ? (
@@ -16,15 +18,16 @@ const ApplicationCard = (applicationDetail) => {
           <Loading />
         </center>
       ) : (
-        <div className="px-10 flex justify-around border border-black rounded-md p-4 w-[80%] ">
+        <div className="px-10 flex justify-around border border-black rounded-md p-4 w-[80%] flex-col md:flex-row">
           <div className="flex flex-col w-1/3">
             <h3 className="font-bold text-lg">Application Details</h3>
             <p>
               <strong>Applied At:</strong>{" "}
-              {new Date(application.appliedAt).toLocaleDateString()}
+              {new Date(application.createdAt).toLocaleDateString()}
             </p>
             <p>
-              <strong>Status:</strong> {application.status}
+              <strong>Status:</strong>{" "}
+              {application.status == "NEW" ? "APPLIED" : application.status}
             </p>
             <p>
               <strong>Message:</strong> {application.message}
@@ -33,7 +36,7 @@ const ApplicationCard = (applicationDetail) => {
           <div className="flex justify-between w-2/3 items-center">
             <div className="flex flex-col">
               <h3 className="font-bold text-lg">
-                Project Name: {application.project.project_name}
+                Project Name: {application.project.name}
               </h3>
               <p>
                 <strong>Stipend:</strong> {application.project.stipend}
@@ -53,7 +56,10 @@ const ApplicationCard = (applicationDetail) => {
               </p>
             </div>
             <div className="m-auto flex items-center">
-              <button className="bg-fuchsia-500 border border-fuchsia-500 hover:bg-white hover:text-black text-white p-3 rounded-lg" onClick={()=>handleViewProject(application.projectId)}>
+              <button
+                className="bg-fuchsia-500 border border-fuchsia-500 hover:bg-white hover:text-black text-white p-3 rounded-lg"
+                onClick={() => handleViewProject(application.projectId)}
+              >
                 View Project
               </button>
             </div>

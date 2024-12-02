@@ -1,13 +1,15 @@
-const { Router } = require('express');
+const { Router, application } = require('express');
 const router = Router();
-const Application = require("../models/Application");
-const Projects = require('../models/Projects');
-const User = require('../models/Users');
-
+const prisma = require('../config/prisma');
 // Get all Projects
 router.get('/', async (req, res) => {
+  console.log("Get all projects");
   try {
-    const projects = await Projects.find();
+    const projects = await prisma.project.findMany({
+      include: {
+        owner: true
+      }
+    });
     res.status(200).json({ projectData: projects });
   } catch (error) {
     res.status(500).send(error.message);
@@ -17,29 +19,31 @@ router.get('/', async (req, res) => {
 // Get Projects for a specific user
 router.get('/user/:id', async (req, res) => {
   const userId = req.params.id;
+  console.log("Get user projects" + userId);
   try {
-    const user = await User.findById(userId);
-    if (!user) return res.status(404).send("User not found");
-
-    const userProjects = await Projects.find({ _id: { $in: user.projectIds } });
-    res.status(200).json({ userProjects });
+    // Use Promise.all to wait for all project data to resolve
+    const projects = await prisma.project.findMany({
+      where: {
+        ownerId: userId
+      },
+      include: {
+        owner: true
+      }
+    });
+    res.status(200).json({ userProjects: projects });
   } catch (error) {
     res.status(500).send(error.message);
   }
 });
 
+
+
 // Create a new Project
 router.post("/", async (req, res) => {
   const { project_name, project_desc, project_link, owner, status, stipend, benefits, members_needed } = req.body;
-
+  console.log("Create new project");
   try {
-    const existingProject = await Projects.findOne({ project_name });
-    if (existingProject) return res.status(409).json({ message: "Project already exists" });
-
-    const user = await User.findById(owner);
-    if (!user) return res.status(404).json({ message: "Owner not found" });
-
-    const newProject = new Projects({
+    const newProject = {
       project_name,
       project_desc,
       project_link,
@@ -49,44 +53,215 @@ router.post("/", async (req, res) => {
       stipend,
       benefits,
       members_needed,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
 
-    const savedProject = await newProject.save();
-    user.projectIds.push(savedProject._id);
-    await user.save();
+    const projectExists = await prisma.project.findFirst({
+      where: {
+        name: project_name
+      }
+    })
 
-    res.status(201).json(savedProject);
+    if (projectExists) return res.status(409).json({ message: "Project already exists" });
+    const user = await prisma.user.findUnique({
+      where: {
+        id: newProject.owner
+      }
+    })
+    if (!user) return res.status(404).json({ message: "User not found" });
+    const project = await prisma.project.create({
+      data: {
+        name: newProject.project_name,
+        description: newProject.project_desc,
+        ownerId: user.id,
+        project_link: newProject.project_link,
+        project_status: newProject.status,
+        benefits: newProject.benefits,
+        stipend: newProject.stipend,
+        members_needed: parseInt(newProject.members_needed),
+        createdAt: newProject.createdAt,
+        updatedAt: newProject.updatedAt,
+        collaborators_id: newProject.collaborators
+      }
+    })
+    console.log(`Project: ${project.id} is created`);
+
+    await prisma.user.update({
+      where: {
+        id: owner
+      },
+      data: {
+        projects: {
+          connect: {
+            id: project.id
+          }
+        }
+      }
+    })
+
+    res.status(201).json({ id: project.id, ...newProject });
   } catch (error) {
     console.log(error.message)
-    res.status(500).json({ message: "Error creating project", error });
+    res.status(500).json({ message: "Error creating project", error: error });
   }
 });
 
 // Get Project By ID
 router.get('/:id', async (req, res) => {
+  console.log("Get specific projects");
   try {
-    const project = await Projects.find({ _id: req.params.id }).populate('owner').populate('collaborators');
+    const project = await prisma.project.findUnique({
+      where: {
+        id: req.params.id
+      },
+      include: {
+        owner: true,
+        collaborators: true
+      }
+    })
     if (!project) return res.status(404).send('Project not found');
-
-    const applications = await Application.find({ projectId: project._id });
-    res.status(200).json({ ...project, applications });
+    const applications = await prisma.applications.findMany({
+      where: {
+        projectId: project.id
+      }
+    })
+    let currProject = { ...project }
+    if (applications) {
+      currProject = { ...project, application: applications }
+    }
+    res.status(200).json(currProject);
   } catch (error) {
-    console.log(error.message)
+    console.log(error)
     res.status(500).send(error.message);
   }
 });
+router.get("/applications/:id", async (req, res) => {
+  console.log("Get applications of user");
+  try {
+    const userId = req.params.id;
+    // Find all applications made by the user
+    const userApplications = await prisma.applications.findMany({
+      where: {
+        userId: userId
+      }
+    })
+    // Fetch project data for each application using projectId
+    const projectApplied = await Promise.all(
+      userApplications.map(async (application) => {
+        const project = await prisma.project.findFirst({
+          where: {
+            id: application.projectId
+          }
+        })
+        return project ? project : null;
+      })
+    );
+    // Return both user applications and project details
+    // console.log({userApplications,projectApplied})
+    res.status(200).json({
+      userApplications,
+      projectsAppliedTo: projectApplied.filter((project) => project !== null), // Filter out any null projects
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send(error.message);
+  }
+});
+//To get the applications of the project
+router.get("/project-application/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    // Get project details
+    const projectDetails = await prisma.project.findUnique({
+      where: {
+        id: id,
+      }
+    })
+    // Get all applications for the project
+    const projectApplications = await prisma.applications.findMany({
+      where: {
+        projectId: id
+      }
+    })
+    // Use Promise.all to fetch user details for each application
+    const applicationsWithUserDetails = await Promise.all(
+      projectApplications.map(async (application) => {
+        const userDetails = await prisma.user.findUnique({
+          where: {
+            id: application.userId
+          }
+        })
+        return { ...application, userDetails };
+      })
+    );
+    res.status(200).json({ projectDetails, projectApplications: applicationsWithUserDetails });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(err.message);
+  }
+});
+
+router.post('/apply', async (req, res) => {
+  try {
+    const application = req.body;
+    const existingApplication = await prisma.applications.findFirst({
+      where: {
+        AND: [{ userId: application.applier },
+        { projectId: application.projectId }]
+      }
+    })
+
+    if (existingApplication) {
+      console.log("Applied already")
+      return res.json({ message: 'Already Applied' });
+    }
+
+    const newApplication = await prisma.applications.create({
+      data: {
+        userId: application.applier,
+        projectId: application.projectId,
+        resume_link: application.resume,
+        message: application.message
+      }
+    })
+    return res.status(201).json({ message: 'Successfully Applied' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send(error.message);
+  }
+
+})
 
 // Update Project By ID
 router.put('/:id', async (req, res) => {
+  const { name, description, project_link, owner, collaborators, project_status, stipend, benefits, members_needed, createdAt } = req.body;
   try {
-    const updatedData = { ...req.body, updatedAt: new Date() };
-    const updatedProject = await Projects.findByIdAndUpdate(req.params.id, updatedData, { new: true });
+    const updatedProject = await prisma.project.update({
+      where: {
+        id: req.params.id
+      },
+      data: {
+        name: name,
+        description: description,
+        project_link,
+        ownerId: owner.id,
+        collaborators_id: {
+          set: collaborators
+        },
+        project_status: project_status,
+        stipend: stipend,
+        members_needed: members_needed,
+        benefits: benefits,
+        createdAt: createdAt,
+        updatedAt: new Date().toISOString()
+      }
+    })
 
     if (!updatedProject) return res.status(404).send('Project not found');
-    res.status(200).json(updatedProject);
+    res.status(200).json({ ...updatedProject });
   } catch (error) {
+    console.error(error);
     res.status(400).send(error.message);
   }
 });
@@ -94,64 +269,185 @@ router.put('/:id', async (req, res) => {
 // Delete Project By ID
 router.delete('/:id', async (req, res) => {
   try {
-    const project = await Projects.findByIdAndDelete(req.params.id);
-    if (!project) return res.status(404).send('Project not found');
+    const deleteProject = await prisma.project.findUnique({
+      where: {
+        id: req.params.id
+      },
+      include: {
+        owner: true,
+        collaborators: true
+      }
+    })
+    await prisma.project.delete({
+      where: {
+        id: req.params.id
+      }
+    })
+    await prisma.user.update({
+      where: {
+        id: deleteProject.owner.id
+      },
+      data: {
+        projects: {
+          disconnect: {
+            id: req.params.id
+          }
+        }
+      }
+    });
+    await prisma.applications.deleteMany({
+      where: {
+        projectId: req.params.id
+      }
+    })
 
-    await User.updateMany(
-      { _id: { $in: [project.owner, ...project.collaborators] } },
-      { $pull: { projectIds: project._id } }
-    );
-    await Application.deleteMany({ projectId: project._id });
-
+    await deleteProject.collaborators.map(async collab => {
+      await prisma.user.update({
+        where: {
+          id: collab.id
+        },
+        data: {
+          projects: {
+            disconnect: {
+              id: req.params.id
+            }
+          }
+        }
+      })
+    })
     res.status(200).json({ message: 'Project deleted' });
   } catch (error) {
     res.status(500).send(error.message);
   }
 });
-
-// Accept an Application
 router.put("/project-application/accept/:id", async (req, res) => {
   const { applierId } = req.body;
+  const projectId = req.params.id;
+
   try {
-    const project = await Projects.findById(req.params.id);
-    if (!project) return res.status(404).send("Project not found");
+    // Fetch project document
+    const projectDoc = await prisma.project.findUnique({
+      where: { id: projectId },
+    });
+    if (!projectDoc) return res.status(404).send("Project not found");
 
-    const application = await Application.findOne({ projectId: project._id, applier: applierId });
-    if (!application) return res.status(404).send("Application not found");
+    // Fetch application document
+    const applicationDoc = await prisma.applications.findFirst({
+      where: { AND: [{ userId: applierId }, { projectId: projectId }] },
+    });
+    if (!applicationDoc) return res.status(404).send("Application not found");
 
-    if (project.members_needed > 0) {
-      project.members_needed -= 1;
-      project.collaborators.push(applierId);
-      await project.save();
+    // Check if there are enough slots available
+    if (projectDoc.members_needed > 0) {
+      // Update project
+      console.log(applierId)
+      await prisma.project.update({
+        where: { id: projectId },
+        data: {
+          members_needed: projectDoc.members_needed - 1,
+          collaborators: { connect: { id: applierId } },
+        },
+      });
 
-      await User.findByIdAndUpdate(applierId, { $addToSet: { projectIds: project._id } });
-      application.status = "ACCEPTED";
-      await application.save();
+      // Update application status
+      await prisma.applications.update({
+        where: { id: applicationDoc.id },
+        data: { status: "ACCEPTED" },
+      });
 
-      res.status(200).send("Application accepted");
+      return res.status(200).send("Application accepted");
     } else {
-      application.status = "PROJECT ALREADY RECRUITMENT FILLED";
-      await application.save();
-      res.status(400).send("Project is full");
+      await prisma.applications.update({
+        where: { id: applicationDoc.id },
+        data: { status: 'FILLED' },
+      })
+      return res.status(400).send("No slots available");
     }
-  } catch (error) {
-    res.status(500).send(error.message);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(err.message);
   }
 });
 
-// Reject an Application
 router.put("/project-application/reject/:id", async (req, res) => {
   const { applierId } = req.body;
-  try {
-    const application = await Application.findOne({ projectId: req.params.id, applier: applierId });
-    if (!application) return res.status(404).send("Application not found");
+  const projectId = req.params.id;
 
-    application.status = "REJECTED";
-    await application.save();
-    res.status(200).send("Application Rejected");
-  } catch (error) {
-    res.status(500).send(error.message);
+  try {
+    // Fetch application document
+    const applicationDoc = await prisma.applications.findUnique({
+      where: { userId_projectId: { userId: applierId, projectId } },
+    });
+    if (!applicationDoc) return res.status(404).send("Application not found");
+
+    // Update application status to "REJECTED"
+    await prisma.applications.update({
+      where: { id: applicationDoc.id },
+      data: { status: "REJECTED" },
+    });
+
+    return res.status(200).send("Application rejected");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(err.message);
   }
 });
+
+router.delete("/collaborators/:id", async (req, res) => {
+  const { ownerId, collaboratorId } = req.body;
+  const projectId = req.params.id;
+
+  try {
+    const projectDoc = await prisma.project.findUnique({
+      where: {
+        id: projectId
+      }
+    })
+    if (!projectDoc) {
+      return res.status(404).send("Project not found");
+    }
+    await prisma.project.update({
+      where: {
+        id: projectId
+      },
+      data: {
+        collaborators: {
+          disconnect: {
+            id: collaboratorId
+          }
+        },
+        members_needed: projectDoc.members_needed + 1
+      }
+    })
+
+    // Step 2: Update collaborator's document to remove projectId from their project list
+    const collaboratorData = await prisma.user.findUnique({
+      where: {
+        id: collaboratorId
+      }
+    })
+
+    if (collaboratorData) {
+      await prisma.user.update({
+        where: {
+          id: collaboratorId
+        },
+        data: {
+          projects: {
+            disconnect: {
+              id: projectId
+            }
+          }
+        }
+      })
+    }
+
+    return res.status(200).send("Collaborator removed successfully");
+  } catch (err) {
+    console.log(err.message);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 
 module.exports = router;

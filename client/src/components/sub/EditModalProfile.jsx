@@ -100,7 +100,7 @@ const EditModalProfile = ({ close }) => {
                   required
                 />
               </div>
-              <div>
+              {/* <div>
                 <label htmlFor="email" className="block mb-2">
                   Email:
                 </label>
@@ -112,7 +112,7 @@ const EditModalProfile = ({ close }) => {
                   className="block w-full p-2 rounded-lg border"
                   required
                 />
-              </div>
+              </div> */}
               <div>
                 <label htmlFor="role" className="block mb-2">
                   Role:
