@@ -24,10 +24,19 @@ router.get('/user/:id', async (req, res) => {
     // Use Promise.all to wait for all project data to resolve
     const projects = await prisma.project.findMany({
       where: {
-        ownerId: userId
+        OR: [
+          { ownerId: userId }, {
+            collaborators: {
+              some: {
+                id: userId
+              }
+            }
+          }
+
+        ]
       },
       include: {
-        owner: true
+        owner: true,
       }
     });
     res.status(200).json({ userProjects: projects });
@@ -320,6 +329,7 @@ router.put("/project-application/accept/:id", async (req, res) => {
     });
     if (!applicationDoc) return res.status(404).send("Application not found");
 
+
     // Check if there are enough slots available
     if (projectDoc.members_needed > 0) {
       // Update project
@@ -343,7 +353,7 @@ router.put("/project-application/accept/:id", async (req, res) => {
           id: applierId,
         },
         data: {
-          projects: {
+          collaborations: {
             connect: {
               id: projectId,
             },
@@ -387,6 +397,36 @@ router.put("/project-application/reject/:id", async (req, res) => {
     res.status(500).send(err.message);
   }
 });
+router.delete("/project-application/:id", async (req, res) => {
+  const projectId = req.params.id;
+  const applicationId = req.body;
+  try {
+
+    await prisma.project.update({
+      where: { id: projectId },
+      data: {
+        Applications: {
+          delete: {
+            id: applicationId
+          }
+        }
+      }
+    })
+    return res.status(204).send("Application deleted");
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+
+})
+router.delete("/application/:id", async (req, res) => {
+  const id = req.params.id;
+  await prisma.applications.delete({ where: { id: id } }).then(() => {
+    res.status(204).send("Application deleted");
+  }).catch((err) => {
+    res.status(500).send(err.message);
+  });
+
+})
 
 router.delete("/collaborators/:id", async (req, res) => {
   const { projectId } = req.body;
@@ -414,6 +454,12 @@ router.delete("/collaborators/:id", async (req, res) => {
         members_needed: projectDoc.members_needed + 1
       }
     })
+    await prisma.applications.update({
+      where: { AND: [{ projectId: projectId }, { userId: collaboratorId }, {}] },
+      data: {
+        status: 'REJECTED'
+      }
+    })
 
     // Step 2: Update collaborator's document to remove projectId from their project list
     const collaboratorData = await prisma.user.findUnique({
@@ -428,7 +474,7 @@ router.delete("/collaborators/:id", async (req, res) => {
           id: collaboratorId
         },
         data: {
-          projects: {
+          collaborations: {
             disconnect: {
               id: projectId
             }

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Loading from "../../sub/Loading";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const ApplicationCard = (applicationDetail) => {
   const [loading] = useState(false);
@@ -11,6 +12,12 @@ const ApplicationCard = (applicationDetail) => {
   let application = applicationDetail.application;
   // application.project = applicationDetail.
 
+  const handleDeleteApp = async (applicationId) => {
+    await axios
+      .delete(`${process.env.API_URL}/application/${applicationId}`)
+      .then((res) => window.alert(res.data))
+      .catch((err) => console.log(err));
+  };
   return (
     <>
       {loading ? (
@@ -55,12 +62,20 @@ const ApplicationCard = (applicationDetail) => {
                 </a>
               </p>
             </div>
-            <div className="m-auto flex items-center">
+            <div className="m-auto flex items-center m-3">
               <button
                 className="bg-fuchsia-500 border border-fuchsia-500 hover:bg-white hover:text-black text-white p-3 rounded-lg"
                 onClick={() => handleViewProject(application.projectId)}
               >
                 View Project
+              </button>
+            </div>
+            <div>
+              <button
+                className="bg-red-500 border border-red-500 hover:bg-white hover:text-red-500 text-white p-3 rounded-lg"
+                onClick={() => handleDeleteApp(application.id)}
+              >
+                Delete
               </button>
             </div>
           </div>
