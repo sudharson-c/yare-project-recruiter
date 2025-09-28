@@ -6,6 +6,8 @@ import { UserContext } from "../../../../context/UserContext";
 import Loading from "../../sub/Loading";
 import ProjectCard from "./ProjectCard";
 
+const API_BASE = import.meta?.env?.VITE_API_URL ?? process.env.API_URL ?? "";
+
 const Projects = () => {
   const { currentUser } = useContext(UserContext);
   const [loading, setLoading] = useState(true);
@@ -13,22 +15,28 @@ const Projects = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios
-      .get(`${process.env.API_URL}/projects`)
-      .then((response) => {
-        setProjects(response.data.projectData);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching projects:", error);
-        setLoading(false);
-      });
-  }, []);
+    if (!currentUser) {
+      navigate("/");
+    }
+  }, [currentUser, navigate]);
 
-  if (!currentUser) {
-    navigate("/");
-    return null;
-  }
+  useEffect(() => {
+    let cancelled = false;
+    axios
+      .get(`${API_BASE}/projects`)
+      .then((response) => {
+        if (!cancelled) setProjects(response.data.projectData ?? []);
+      })
+      .catch((e) => {
+        if (!cancelled) console.error("Error fetching projects:", e);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <div className="max-w-screen-xl mx-auto px-6 py-10">

@@ -135,17 +135,25 @@ const ProjectDetails = () => {
         <p className="text-gray-600 text-center mb-6">{project.description}</p>
 
         <div className="flex flex-col items-center space-y-4">
-          <p>
-            <b>Github link:</b>{" "}
-            <a
-              href={project.project_link}
-              className="text-blue-500 underline"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              View Project
-            </a>
-          </p>
+          {project.project_link != "nil" ? (
+            <p>
+              <b>Github link:</b>{" "}
+              <a
+                href={
+                  project.project_link.startsWith("http")
+                    ? project.project_link
+                    : `https://${project.project_link}`
+                }
+                className="text-blue-500 underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View Project
+              </a>
+            </p>
+          ) : (
+            <p className="text-red-300">Project Link not provided </p>
+          )}
           <p>
             <strong>Owner:</strong> {project.owner.firstName}{" "}
             {project.owner.lastName}

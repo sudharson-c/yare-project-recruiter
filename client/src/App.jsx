@@ -11,7 +11,6 @@ import {
 } from "react-router-dom";
 import SignUpPage from "./routes/SignUpPage";
 import SignInPage from "./routes/SignInPage";
-import axios from "axios";
 import { UserProvider } from "../context/UserContext";
 import Projects from "./components/pages/projects/Projects";
 import AddProject from "./components/pages/add-project/AddProject";
@@ -22,6 +21,7 @@ import Applications from "./components/pages/applications/Applications";
 import Profile from "./components/pages/profile/Profile";
 import ProtectedRoute from "./ProtectedRoute";
 import GetMoreDetails from "./routes/GetMoreDetails";
+import KanbanBoard from "./components/pages/kanban/KanbanBoard";
 
 const App = () => {
   const { isSignedIn, user } = useUser();
@@ -29,7 +29,7 @@ const App = () => {
   return (
     <UserProvider>
       <Router>
-        <div className="min-h-screen">
+        <div className="min-h-[95vh]">
           <Navbar />
           <div className="w-full text-center text-gray-400 bg-gray-100">
             This is a beta version✨
@@ -49,6 +49,7 @@ const App = () => {
                   path="/projects/:project_id"
                   element={<ProjectDetails />}
                 />
+                <Route path="/kanban-board" element={<KanbanBoard />} />
                 <Route
                   path="/projects/:id/applications"
                   element={<Applications />}
@@ -60,8 +61,8 @@ const App = () => {
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </div>
-          <Footer />
         </div>
+        <Footer />
       </Router>
     </UserProvider>
   );
