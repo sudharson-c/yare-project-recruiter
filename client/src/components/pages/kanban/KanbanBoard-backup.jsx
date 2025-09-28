@@ -1,17 +1,9 @@
-// src/components/kanban/KanbanBoard.jsx
-// Fully wired, responsive grid, AI seeding, per-card AI actions, and per-project localStorage
-import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
+// KanbanTasksBoardStatic.jsx (polished UI)
+import React, { useContext, useEffect, useMemo, useState, useRef } from "react";
 import axios from "axios";
 import { UserContext } from "../../../../context/UserContext";
-import { generateTasksGemini } from "./geminiGenerateTasks";
-import {
-  geminiRewriteTitle,
-  geminiSuggestLabelsAndAssignee,
-  geminiSummarize,
-} from "./geminiActions";
 
 const API_BASE = import.meta?.env?.VITE_API_URL ?? process.env.API_URL ?? "";
-
 const STORAGE_PREFIX = "kanban_static_v1";
 const STORAGE_LAST = "kanban_static_last_project";
 
@@ -21,6 +13,15 @@ const defaultColumns = [
   { id: "col_review", name: "Review" },
   { id: "col_done", name: "Done" },
 ];
+
+const safeRead = (key) => {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
 
 const midpointKey = (a, b) => {
   if (!a && !b) return "m";
@@ -43,17 +44,9 @@ const midpointKey = (a, b) => {
   return a.orderKey + "m";
 };
 
-const safeRead = (key) => {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-};
-
 export default function KanbanTasksBoardStatic() {
   const { currentUser } = useContext(UserContext);
+
   const [projects, setProjects] = useState([]);
   const [selectedProjectId, setSelectedProjectId] = useState("");
   const [project, setProject] = useState(null);
@@ -61,23 +54,20 @@ export default function KanbanTasksBoardStatic() {
   const [tasks, setTasks] = useState([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [loadingProject, setLoadingProject] = useState(false);
-  const [error, setError] = useState("");
   const [dragOverCol, setDragOverCol] = useState("");
   const [search, setSearch] = useState("");
   const [onlyMine, setOnlyMine] = useState(false);
-  const [loadingAi, setAI] = useState(false);
-  const [busyTaskId, setBusyTaskId] = useState("");
+  const [error, setError] = useState("");
 
-  // Hydration guard to avoid clobbering saved tasks with defaults
   const hydratedRef = useRef(false);
 
-  // Restore last selected project
+  // Restore last selected project on mount
   useEffect(() => {
     const last = localStorage.getItem(STORAGE_LAST);
     if (last) setSelectedProjectId(last);
   }, []);
 
-  // Fetch projects the user owns or collaborates on
+  // Fetch projects for selector
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
@@ -98,23 +88,25 @@ export default function KanbanTasksBoardStatic() {
     return () => {
       cancelled = true;
     };
-  }, [currentUser]);
+  }, [currentUser]); // uses existing route shape
 
-  // Load selected project details and per-project board
   useEffect(() => {
     let cancelled = false;
     const loadProject = async () => {
       if (!selectedProjectId) return;
-      hydratedRef.current = false;
+      hydratedRef.current = false; // block persist until we hydrate
       setLoadingProject(true);
       try {
         localStorage.setItem(STORAGE_LAST, selectedProjectId);
+
+        // Fetch project details (owner + collaborators) to build assignee list
         const res = await axios.get(
           `${API_BASE}/projects/${selectedProjectId}`
         );
         if (cancelled) return;
         setProject(res.data ?? null);
 
+        // Read per-project local board
         const storageKey = `${STORAGE_PREFIX}:${selectedProjectId}`;
         const parsed = safeRead(storageKey);
         if (parsed?.columns && parsed?.tasks) {
@@ -125,7 +117,7 @@ export default function KanbanTasksBoardStatic() {
           setTasks([]);
         }
 
-        hydratedRef.current = true;
+        hydratedRef.current = true; // now allow persistence
       } catch (e) {
         if (!cancelled) setError(e?.message ?? "Failed to load project");
       } finally {
@@ -138,73 +130,47 @@ export default function KanbanTasksBoardStatic() {
     };
   }, [selectedProjectId]);
 
-  const summarizeTask = async (task) => {
-    try {
-      setBusyTaskId(task.id);
-      const src = [task.title ?? "", task.description ?? ""].join(". ");
-      const summary = await geminiSummarize(src);
-      updateTask(task.id, { description: summary });
-    } catch (e) {
-      window.alert(e?.message ?? "Failed to summarize");
-    } finally {
-      setBusyTaskId("");
-    }
-  };
-
-  const rewriteTitle = async (task) => {
-    try {
-      setBusyTaskId(task.id);
-      const src =
-        task.title?.length > 10
-          ? task.title
-          : task.description ?? task.title ?? "";
-      const title = await geminiRewriteTitle(src);
-      updateTask(task.id, { title });
-    } catch (e) {
-      window.alert(e?.message ?? "Failed to rewrite title");
-    } finally {
-      setBusyTaskId("");
-    }
-  };
-
-  // Persist to localStorage once hydrated
+  // Persist only after hydration; debounce with microtask to avoid double-writes
   useEffect(() => {
     if (!selectedProjectId || !hydratedRef.current) return;
     const storageKey = `${STORAGE_PREFIX}:${selectedProjectId}`;
     queueMicrotask(() => {
       try {
         localStorage.setItem(storageKey, JSON.stringify({ columns, tasks }));
-      } catch {}
+      } catch {
+        // ignore quota / serialization errors for MVP
+      }
     });
   }, [selectedProjectId, columns, tasks]);
 
-  // Build collaborator options from project
-  const collaboratorOptions = useMemo(() => {
+  const people = useMemo(() => {
     if (!project) return [];
-    const ownerOpt = project.owner
-      ? [
-          {
-            id: project.owner.id,
-            label:
-              `${project.owner.firstName ?? ""} ${
-                project.owner.lastName ?? ""
-              }`.trim() || project.owner.email,
-          },
-        ]
-      : [];
-    const collabOpts = Array.isArray(project.collaborators)
-      ? project.collaborators.map((u) => ({
-          id: u.id,
-          label: `${u.firstName ?? ""} ${u.lastName ?? ""}`.trim() || u.email,
-        }))
-      : [];
+    const all = [
+      project.owner && {
+        id: project.owner.id,
+        label:
+          `${project.owner.firstName ?? ""} ${
+            project.owner.lastName ?? ""
+          }`.trim() || project.owner.email,
+      },
+      ...(Array.isArray(project.collaborators)
+        ? project.collaborators.map((u) => ({
+            id: u.id,
+            label: `${u.firstName ?? ""} ${u.lastName ?? ""}`.trim() || u.email,
+          }))
+        : []),
+    ].filter(Boolean);
+    const uniq = [];
     const seen = new Set();
-    return [...ownerOpt, ...collabOpts].filter(
-      (o) => !seen.has(o.id) && seen.add(o.id)
-    );
-  }, [project]);
+    for (const p of all) {
+      if (!seen.has(p.id)) {
+        uniq.push(p);
+        seen.add(p.id);
+      }
+    }
+    return uniq;
+  }, [project]); // collaborators used for assignee dropdown
 
-  // Derived view with search and "My tasks"
   const tasksByColumn = useMemo(() => {
     const map = new Map(columns.map((c) => [c.id, []]));
     const q = search.trim().toLowerCase();
@@ -223,19 +189,18 @@ export default function KanbanTasksBoardStatic() {
     for (const arr of map.values())
       arr.sort((a, b) => a.orderKey.localeCompare(b.orderKey));
     return map;
-  }, [columns, tasks, search, onlyMine, currentUser]);
+  }, [columns, tasks, search, onlyMine, currentUser]); // adds search + my tasks filter
 
-  // DnD
   const onDragStart = (e, taskId) => {
     e.dataTransfer.setData("text/plain", taskId);
     e.dataTransfer.effectAllowed = "move";
   };
-  const onDragOver = (e, colId) => {
+  const onDragOver = (e, columnId) => {
     e.preventDefault();
-    setDragOverCol(colId);
+    setDragOverCol(columnId);
   };
-  const onDragLeave = (colId) => {
-    if (dragOverCol === colId) setDragOverCol("");
+  const onDragLeave = (columnId) => {
+    if (dragOverCol === columnId) setDragOverCol("");
   };
   const onDrop = (e, destColumnId) => {
     e.preventDefault();
@@ -256,7 +221,7 @@ export default function KanbanTasksBoardStatic() {
     const dest = tasksByColumn.get(columnId) ?? [];
     const last = dest[dest.length - 1] ?? null;
     const newKey = midpointKey(last, null);
-    const id = "t" + Math.random().toString(36).slice(2, 10);
+    const id = "t" + Math.random().toString(36).slice(2, 8);
     setTasks((prev) => [
       ...prev,
       {
@@ -266,7 +231,6 @@ export default function KanbanTasksBoardStatic() {
         columnId,
         orderKey: newKey,
         assigneeId: "",
-        labels: [],
       },
     ]);
   };
@@ -277,21 +241,25 @@ export default function KanbanTasksBoardStatic() {
   const deleteTask = (taskId) =>
     setTasks((prev) => prev.filter((t) => t.id !== taskId));
 
-  const canGenerate = !!selectedProjectId && tasks.length === 0;
+  const chip = (n) => (
+    <span className="ml-2 inline-flex items-center rounded-full bg-gray-200 px-2 py-0.5 text-xs text-gray-700">
+      {n}
+    </span>
+  );
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
+      {/* Sticky header */}
       <div className="sticky top-0 z-10 bg-white/80 backdrop-blur border-b">
-        <div className="mx-auto max-w-7xl px-3 py-3 flex items-center gap-3">
-          <h2 className="text-lg font-semibold">Tasks</h2>
+        <div className="mx-auto px-3 py-3 flex items-center gap-3">
+          <h2 className="text-lg sm:text-md font-semibold">Tasks</h2>
           <select
             className="border rounded px-2 py-1"
             value={selectedProjectId}
             onChange={(e) => setSelectedProjectId(e.target.value)}
           >
             <option value="">
-              {loadingProjects ? "Loading…" : "Select a project"}
+              {projects.length ? "Select a project" : "Loading..."}
             </option>
             {projects.map((p) => (
               <option key={p.id} value={p.id}>
@@ -299,10 +267,9 @@ export default function KanbanTasksBoardStatic() {
               </option>
             ))}
           </select>
-
           <input
-            className="ml-auto border rounded px-2 py-1 w-64"
-            placeholder="Search tasks…"
+            className="ml-auto border rounded px-2 py-1 w-[50%]"
+            placeholder="Search tasks..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -314,33 +281,6 @@ export default function KanbanTasksBoardStatic() {
             />
             My tasks
           </label>
-
-          {loadingAi ? (
-            <p className="border rounded px-3 py-1 bg-fuchsia-600 text-white">
-              Loading...
-            </p>
-          ) : (
-            canGenerate && (
-              <button
-                className="border rounded px-3 py-1 hover:bg-gray-100"
-                onClick={async () => {
-                  try {
-                    setAI(true);
-                    const gen = await generateTasksGemini(project, 6);
-                    setTasks((prev) => [...prev, ...gen]); // persisted by existing useEffect
-                  } catch (e) {
-                    console.log(e);
-                    window.alert(e?.message ?? "Failed to generate tasks");
-                  } finally {
-                    setAI(false);
-                  }
-                }}
-                title="Generate tasks from project details (Gemini)"
-              >
-                Generate tasks
-              </button>
-            )
-          )}
         </div>
       </div>
 
@@ -350,24 +290,26 @@ export default function KanbanTasksBoardStatic() {
         <div className="p-4 text-gray-600">
           Choose a project to view its board.
         </div>
-      ) : loadingProject ? (
-        <div className="p-4">Loading project…</div>
       ) : (
         <div className="mx-auto max-w-7xl px-3 py-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {columns.map((col) => {
               const items = tasksByColumn.get(col.id) ?? [];
               const active = dragOverCol === col.id;
+
               return (
                 <div
                   key={col.id}
-                  className={`rounded-xl border bg-gradient-to-b from-white to-gray-50 transition flex flex-col min-h-[360px] ${
-                    active ? "ring-2 ring-blue-400" : "ring-0"
-                  }`}
                   onDragOver={(e) => onDragOver(e, col.id)}
                   onDragLeave={() => onDragLeave(col.id)}
                   onDrop={(e) => onDrop(e, col.id)}
+                  className={`
+            rounded-xl border bg-gradient-to-b from-white to-gray-50 transition
+            ${active ? "ring-2 ring-blue-400" : "ring-0"}
+            flex flex-col min-h-[360px]
+          `}
                 >
+                  {/* Column header (sticky within column) */}
                   <div className="sticky top-0 z-10 bg-white/80 backdrop-blur rounded-t-xl border-b p-3 flex items-center justify-between">
                     <div className="font-medium">
                       {col.name}
@@ -383,9 +325,10 @@ export default function KanbanTasksBoardStatic() {
                     </button>
                   </div>
 
+                  {/* Column body (independent vertical scroll) */}
                   <div className="p-3 flex-1 flex flex-col gap-2 max-h-[calc(100vh-220px)] overflow-y-auto">
                     {items.map((task) => {
-                      const assignee = collaboratorOptions.find(
+                      const assignee = people.find(
                         (p) => p.id === task.assigneeId
                       );
                       const initials = assignee?.label
@@ -394,6 +337,7 @@ export default function KanbanTasksBoardStatic() {
                         .join("")
                         .slice(0, 2)
                         .toUpperCase();
+
                       return (
                         <div
                           key={task.id}
@@ -425,7 +369,6 @@ export default function KanbanTasksBoardStatic() {
                                 placeholder="Description"
                                 rows={2}
                               />
-
                               <div className="mt-2 flex items-center gap-2">
                                 <div className="flex items-center gap-2">
                                   <span className="text-xs text-gray-500">
@@ -441,7 +384,7 @@ export default function KanbanTasksBoardStatic() {
                                     }
                                   >
                                     <option value="">Unassigned</option>
-                                    {collaboratorOptions.map((p) => (
+                                    {people.map((p) => (
                                       <option key={p.id} value={p.id}>
                                         {p.label}
                                       </option>
@@ -459,31 +402,7 @@ export default function KanbanTasksBoardStatic() {
                                   </div>
                                 )}
                               </div>
-
-                              {busyTaskId === task.id ? (
-                                <p className="bg-fuchsia-600 text-white rounded text-center my-2">
-                                  Loading
-                                </p>
-                              ) : (
-                                <div className="mt-2 flex flex-wrap gap-2">
-                                  <button
-                                    className="text-xs rounded border px-2 py-1 hover:bg-gray-100"
-                                    disabled={busyTaskId === task.id}
-                                    onClick={() => summarizeTask(task)}
-                                  >
-                                    Summarize
-                                  </button>
-                                  <button
-                                    className="text-xs rounded border px-2 py-1 hover:bg-gray-100"
-                                    disabled={busyTaskId === task.id}
-                                    onClick={() => rewriteTitle(task)}
-                                  >
-                                    Rewrite
-                                  </button>
-                                </div>
-                              )}
                             </div>
-
                             <button
                               className="text-gray-400 hover:text-red-600"
                               title="Delete task"
